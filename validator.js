@@ -138,38 +138,47 @@ Validator.IsAnything = function(val) { };
 
 Validator.IsDefined = function(val) {
     if(undefined === val) this.error('is undefined');
-    if(null === val) this.error('is null');
+    else if(null === val) this.error('is null');
+    else return true;
 };
 
 Validator.IsType = function(val, type) {
-    Validator.IsDefined.call(this, val);
-    if(typeof val !== type) this.error("is " + (typeof val) + ", not " + type);
+    if(Validator.IsDefined.call(this, val)) {
+        if(typeof val !== type) this.error("is " + (typeof val) + ", not " + type);
+        else return true;
+    }
 };
 
 Validator.IsNumber = function(val) {
-    Validator.IsType.call(this, val, 'number');
+    return Validator.IsType.call(this, val, 'number');
 };
 
 Validator.IsInteger = function(val) {
-    Validator.IsNumber.call(this, val);
-    if(val % 1 !== 0) this.error(" is not an integer.");
+    if(Validator.IsNumber.call(this, val)) {
+        if(val % 1 !== 0) this.error(" is not an integer.");
+        else return true;
+    }
 };
 
 Validator.IsString = function(val) {
-    Validator.IsType.call(this, val, 'string');
-    if(val.match(/^\s/)) this.error('has leading whitespace');
-    if(val.match(/\s$/)) this.error('has trailing whitespace');
+    if(Validator.IsType.call(this, val, 'string')) {
+        if(val.match(/^\s/)) this.error('has leading whitespace');
+        else if(val.match(/\s$/)) this.error('has trailing whitespace');
+        else return true;
+    }
 };
 
 Validator.IsNotBlank = function(val) {
-    Validator.IsString.call(this, val);
-    if(val === '') this.error("can't be blank");
+    if(Validator.IsString.call(this, val)) {
+        if(val === '') this.error("can't be blank");
+        else return true;
+    }
 };
 
 Validator.IsOptional = function(template) {
     return function(val) {
         if(val !== undefined) {
-            template.call(this, val);
+            return template.call(this, val);
         }
     };
 };
