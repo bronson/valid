@@ -11,6 +11,7 @@ Validator.create(function (val) { if(val != 123) this.error(val, "nope!"); }).va
 /*
 Validator.create(null).validate(1);
 Validator.create(undefined).validate(1);
+
 Validator.create('abc').validate(123);
 Validator.create(/^abc$/).validate('abcd');
 Validator.create(true).validate();

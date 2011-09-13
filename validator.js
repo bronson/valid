@@ -13,6 +13,7 @@
 //  - true: this must be present (not undefined) but may be anything including null.
 //  - false: this field must be undefined
 //
+// TODO: make true/false match true/false
 // TODO: how do you specify optional items?
 
 
@@ -22,42 +23,44 @@ var Validator = function(template) {
 
 
 Validator.prototype = {
-    validate: function(subject) {
-        this.object = subject;
+    validate: function(object) {
+        this.object = object;
         this.path = [];
-        this.validate_field(subject, this.template);
+        this.validate_field(object, this.template);
     },
 
-    error: function(val, msg) {
+    error: function(msg) {
         str = "";
         if(this.path.length > 0) str += this.path + ": ";
-        str += val + " " + msg;
-        if(this.object !== val) str += " for " + this.object;
+        str += this.subject + " " + msg;
+        if(this.object !== this.subject) str += " for " + this.object;
         console.log(str);
     },
 
     validate_field: function(subject, tmpl) {
+        var save_subject = this.subject;
+        this.subject = subject;
         switch(typeof tmpl) {
             case 'string':
             case 'number':
-            if(typeof subject !== typeof tmpl) this.error(subject, "is not a " + (typeof tmpl));
-            if(subject !== tmpl) this.error(subject, "does not equal " + tmpl);
+            if(typeof subject !== typeof tmpl) this.error("is not a " + (typeof tmpl));
+            if(subject !== tmpl) this.error("does not equal " + tmpl);
             break;
 
             case 'boolean':
             if(tmpl === true) {
-                if(subject === undefined) this.error(subject, "is not defined");
+                if(subject === undefined) this.error("is not defined");
             } else {
-                if(subject !== undefined) this.error(subject, "is defined");
+                if(subject !== undefined) this.error("is defined");
             }
             break;
 
             case 'function':
             if(tmpl instanceof RegExp) {
                 if(typeof subject === 'string') {
-                    if(!subject.match(tmpl)) this.error(subject, "doesn't match " + tmpl);
+                    if(!subject.match(tmpl)) this.error("doesn't match " + tmpl);
                 } else {
-                    this.error(subject, "is not a string so can't match " + tmpl);
+                    this.error("is not a string so can't match " + tmpl);
                 }
             } else {
                 tmpl.call(this, subject);
@@ -66,19 +69,20 @@ Validator.prototype = {
 
             case 'object':
             if(tmpl === null) {
-                this.error(subject, "Error: template is null!");
+                this.error("Error: template is null!");
             } else {
                 this.validate_object(subject, tmpl);
             }
             break;
 
             case 'undefined':
-            this.error(subject, "Error: template is undefined!");
+            this.error("Error: template is undefined!");
             break;
 
             default:
-            this.error(subject, "Error in template: what is " + (typeof tmpl) + "?");
+            this.error("Error in template: what is " + (typeof tmpl) + "?");
         }
+        this.subject = save_subject;
     },
 
     validate_object: function(subject, tmpl) {
@@ -90,13 +94,13 @@ Validator.prototype = {
                     this.validate_field(subject[key], tmpl[key]);
                     this.path.pop();
                 } else {
-                    this.error(subject, "has " + key + " but template doesn't");
+                    this.error("has " + key + " but template doesn't");
                 }
             }
         }
 
         for(key in tmpl) {
-            if(subject[key] === undefined) this.error(subject, "is missing " + key);
+            if(subject[key] === undefined) this.error("is missing " + key);
         }
     },
 
@@ -106,13 +110,13 @@ Validator.prototype = {
     //
 
     IsDefined: function(val) {
-        if(undefined === val) this.error(val, 'is undefined');
-        if(null === val) this.error(val, 'is null');
+        if(undefined === val) this.error('is undefined');
+        if(null === val) this.error('is null');
     },
 
     IsType: function(val, type) {
         this.IsDefined(val);
-        if(typeof val !== type) this.error(val, "is " + (typeof val) + " not " + type);
+        if(typeof val !== type) this.error("is " + (typeof val) + " not " + type);
     },
 
     IsNumber: function(val) {
@@ -121,18 +125,18 @@ Validator.prototype = {
 
     IsInteger: function(val) {
         this.IsNumber(val);
-        if(val % 1 !== 0) this.error(val, " is not an integer.");
+        if(val % 1 !== 0) this.error(" is not an integer.");
     },
 
     IsString: function(val) {
         this.IsType(val, 'string');
-        if(val.match(/^\s/)) this.error(val, 'has leading whitespace');
-        if(val.match(/\s$/)) this.error(val, 'has trailing whitespace');
+        if(val.match(/^\s/)) this.error('has leading whitespace');
+        if(val.match(/\s$/)) this.error('has trailing whitespace');
     },
 
     IsNonblankString: function(val) {
         this.IsString(val);
-        if(val === '') this.error(val, "can't be blank");
+        if(val === '') this.error("can't be blank");
     }
 };
 
