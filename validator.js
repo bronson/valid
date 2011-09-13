@@ -13,7 +13,6 @@
 //  - true: this must be present (not undefined) but may be anything including null.
 //  - false: this field must be undefined
 //
-// TODO: make true/false match true/false
 // TODO: how do you specify optional items?
 
 
@@ -48,10 +47,10 @@ Validator.prototype = {
             break;
 
             case 'boolean':
-            if(tmpl === true) {
-                if(subject === undefined) this.error("is not defined");
+            if(typeof subject === 'boolean') {
+                if(subject !== tmpl) this.error("is not " + tmpl);
             } else {
-                if(subject !== undefined) this.error("is defined");
+                this.error(" is not a boolean");
             }
             break;
 
@@ -69,14 +68,14 @@ Validator.prototype = {
 
             case 'object':
             if(tmpl === null) {
-                this.error("Error: template is null!");
+                if(subject !== null) this.error("is not null");
             } else {
                 this.validate_object(subject, tmpl);
             }
             break;
 
             case 'undefined':
-            this.error("Error: template is undefined!");
+            if(subject !== undefined) this.error("is not undefined");
             break;
 
             default:
@@ -108,6 +107,8 @@ Validator.prototype = {
     //
     //    validators
     //
+
+    IsAnything: function(val) { },
 
     IsDefined: function(val) {
         if(undefined === val) this.error('is undefined');
