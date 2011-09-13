@@ -56,7 +56,9 @@ Validator.create([12, 13]).validate([12, 14]);
 Validator.create([12, 13]).validate(12);
 Validator.create([12, 13]).validate(undefined);
 
-Validator.create(IsArray(IsString, {min: 1, max: 3})).validate([12, 13]);
-Validator.create(IsArray(IsInteger, {min: 3, max: 4})).validate([12, 13]);
-Validator.create(IsArray(IsInteger, {min: 1, max: 0})).validate([12, 13]);
+with(Validator) {
+  Validator.create(IsArray(IsString, {min: 1, max: 3})).validate([12, 13]);
+  Validator.create(IsArray(IsInteger, {min: 3, max: 4})).validate([12, 13]);
+  Validator.create(IsArray(IsInteger, {min: 1, max: 0})).validate([12, 13]);
+}
 */

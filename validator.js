@@ -24,7 +24,7 @@ Validator.prototype = {
     validate: function(object) {
         this.object = object;
         this.path = [];
-        this.validate_field(object, this.template);
+        this.validate_field(undefined, object, this.template);
     },
 
     error: function(msg) {
@@ -36,9 +36,11 @@ Validator.prototype = {
         console.log(str);
     },
 
-    validate_field: function(subject, tmpl) {
+    validate_field: function(key, subject, tmpl) {
         var save_subject = this.subject;
         this.subject = subject;
+        if(key !== undefined) this.path.push(key);
+
         switch(typeof tmpl) {
             case 'string':
             case 'number':
@@ -87,7 +89,9 @@ Validator.prototype = {
             default:
             this.error("Error in template: what is " + (typeof tmpl) + "?");
         }
+
         this.subject = save_subject;
+        if(key !== undefined) this.path.pop();
     },
 
     validate_array: function(subject, tmpl) {
@@ -95,9 +99,7 @@ Validator.prototype = {
         var i, end = tmpl.length;
         if(subject.length < end) end = subject.length;
         for(i=0; i<end; i++) {
-            this.path.push(i);
-            this.validate_field(subject[i], tmpl[i]);
-            this.path.pop();
+            this.validate_field(i, subject[i], tmpl[i]);
         }
     },
 
@@ -106,9 +108,7 @@ Validator.prototype = {
         for(key in subject) {
             if(subject.hasOwnProperty(key)) {
                 if(tmpl[key]) {
-                    this.path.push(key);
-                    this.validate_field(subject[key], tmpl[key]);
-                    this.path.pop();
+                    this.validate_field(key, subject[key], tmpl[key]);
                 } else {
                     this.error("has " + key + " but template doesn't");
                 }
@@ -191,9 +191,7 @@ Validator.IsArray = function(template, opts) {
                 if(opts.max !== undefined && val.length > opts.max) this.error("has more than " + opts.max + " elements");
             }
             for(var i=0; i<val.length; i++) {
-                this.path.push(i);
-                this.validate_field(val[i], template);
-                this.path.pop();
+                this.validate_field(i, val[i], template);
             }
         } else {
             this.error("is not an array, it's a " + typeof val);
