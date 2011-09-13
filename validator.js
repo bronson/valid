@@ -2,8 +2,8 @@
 //
 //    var Val = require('validator');
 //    var int = new Val(Val.IsInteger);   // create the validator based on a template
-//    int.validate(12.0);                 // then validate objects
-//    int.validate(12.1);
+//    int.validate(12.0);                 // then validate objects, this succeeds
+//    int.validate(12.1);                 // logs an error since 12.1 is not an integer
 //
 //  The template may be:
 //  - an object.  Each field will be compared, fields not mentioned in the template are errors.
@@ -12,11 +12,29 @@
 //  - function: the value will be passed to the function
 //  - true: this must be present (not undefined) but may be anything including null.
 //  - false: this field must be undefined
-//  - IsOptional(IsInteger) -- an optional integer
+//
+// You can also use these built-in matching functions:
+//  - IsAnything: including null and undefined
+//  - IsDefined: must not be null or undefined
+//  - IsNumber
+//  - IsInteger
+//  - IsString: string (error if string has leading or trailing whitespace)
+//  - IsNotBlank: a string that must not be blank or have leading/trailing whitespace
+//  - IsOptional: an optional argument.  For instance: IsOptional(IsInteger)
+//  - IsArray: the argument is an array of any size.  First arg is the template to be
+//    used for each item in the array, second is options.
+//      IsArray(IsInteger) -- an array of integers of any size
+//      IsArray(IsAnything, {:min => 2, :max => 5}) -- an array with 2, 3, 4, or 5 elements
 
 
-var Validator = function(template) {
+// todo: rename template to schema
+// todo: get rid of IsArray options and make them chain instead
+// todo: make it just like Rails validations
+
+
+var Validator = function(template, error) {
     this.template = template;
+    if(error) this.error = error;
 };
 
 
@@ -27,13 +45,17 @@ Validator.prototype = {
         this.validate_field(undefined, object, this.template);
     },
 
-    error: function(msg) {
+    error_str: function(msg) {
         str = "";
         if(this.path.length > 0) str += this.path + ": ";
         str += (typeof this.subject === 'string' ? "'" + this.subject + "'" : this.subject);
         str += " " + msg;
         if(this.object !== this.subject) str += " for " + this.object;
-        console.log(str);
+        return str;
+    },
+
+    error: function(msg) {
+        console.log(this.error_str(msg));
     },
 
     validate_field: function(key, subject, tmpl) {
@@ -45,15 +67,11 @@ Validator.prototype = {
             case 'string':
             case 'number':
             if(typeof subject !== typeof tmpl) this.error("is not a " + (typeof tmpl));
-            if(subject !== tmpl) this.error("does not equal " + tmpl);
+            else if(subject !== tmpl) this.error("does not equal " + tmpl);
             break;
 
             case 'boolean':
-            if(typeof subject === 'boolean') {
-                if(subject !== tmpl) this.error("is not " + tmpl);
-            } else {
-                this.error(" is not a boolean");
-            }
+            if(typeof subject !== 'boolean' || subject !== tmpl) this.error("is not " + tmpl);
             break;
 
             case 'function':
