@@ -12,8 +12,7 @@
 //  - function: the value will be passed to the function
 //  - true: this must be present (not undefined) but may be anything including null.
 //  - false: this field must be undefined
-//
-// TODO: how do you specify optional items?
+//  - IsOptional(IsInteger) -- an optional integer
 
 
 var Validator = function(template) {
@@ -31,7 +30,8 @@ Validator.prototype = {
     error: function(msg) {
         str = "";
         if(this.path.length > 0) str += this.path + ": ";
-        str += this.subject + " " + msg;
+        str += (typeof this.subject === 'string' ? "'" + this.subject + "'" : this.subject);
+        str += " " + msg;
         if(this.object !== this.subject) str += " for " + this.object;
         console.log(str);
     },
@@ -101,43 +101,6 @@ Validator.prototype = {
         for(key in tmpl) {
             if(subject[key] === undefined) this.error("is missing " + key);
         }
-    },
-
-
-    //
-    //    validators
-    //
-
-    IsAnything: function(val) { },
-
-    IsDefined: function(val) {
-        if(undefined === val) this.error('is undefined');
-        if(null === val) this.error('is null');
-    },
-
-    IsType: function(val, type) {
-        this.IsDefined(val);
-        if(typeof val !== type) this.error("is " + (typeof val) + " not " + type);
-    },
-
-    IsNumber: function(val) {
-        this.IsType(val, 'number');
-    },
-
-    IsInteger: function(val) {
-        this.IsNumber(val);
-        if(val % 1 !== 0) this.error(" is not an integer.");
-    },
-
-    IsString: function(val) {
-        this.IsType(val, 'string');
-        if(val.match(/^\s/)) this.error('has leading whitespace');
-        if(val.match(/\s$/)) this.error('has trailing whitespace');
-    },
-
-    IsNonblankString: function(val) {
-        this.IsString(val);
-        if(val === '') this.error("can't be blank");
     }
 };
 
@@ -146,6 +109,53 @@ Validator.create = function(template) {
     return new this(template);
 };
 
+
+
+
+//
+//    validators
+//
+
+// field may be anything at all, including undefined or null
+Validator.IsAnything = function(val) { };
+
+Validator.IsDefined = function(val) {
+    if(undefined === val) this.error('is undefined');
+    if(null === val) this.error('is null');
+};
+
+Validator.IsType = function(val, type) {
+    Validator.IsDefined.call(this, val);
+    if(typeof val !== type) this.error("is " + (typeof val) + ", not " + type);
+};
+
+Validator.IsNumber = function(val) {
+    Validator.IsType.call(this, val, 'number');
+};
+
+Validator.IsInteger = function(val) {
+    Validator.IsNumber.call(this, val);
+    if(val % 1 !== 0) this.error(" is not an integer.");
+};
+
+Validator.IsString = function(val) {
+    Validator.IsType.call(this, val, 'string');
+    if(val.match(/^\s/)) this.error('has leading whitespace');
+    if(val.match(/\s$/)) this.error('has trailing whitespace');
+};
+
+Validator.IsNotBlank = function(val) {
+    Validator.IsString.call(this, val);
+    if(val === '') this.error("can't be blank");
+};
+
+Validator.IsOptional = function(template) {
+    return function(val) {
+        if(val !== undefined) {
+            template.call(this, val);
+        }
+    };
+};
 
 Validator.IsArray = function(template, opts) {
     return function(val) {
@@ -157,3 +167,4 @@ Validator.IsArray = function(template, opts) {
 };
 
 module.exports = Validator;
+
