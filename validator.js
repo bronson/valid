@@ -29,6 +29,7 @@
 
 // todo: rename template to schema
 // todo: get rid of IsArray options and make them chain instead
+// todo: clean up helper functions
 // todo: make it just like Rails validations
 
 
@@ -43,6 +44,7 @@ Validator.prototype = {
         this.object = object;
         this.path = [];
         this.validate_field(undefined, object, this.template);
+        return this;
     },
 
     error_str: function(msg) {
@@ -65,9 +67,11 @@ Validator.prototype = {
 
         switch(typeof tmpl) {
             case 'string':
+            if(subject !== tmpl) this.error("does not equal '" + tmpl + "'");
+            break;
+
             case 'number':
-            if(typeof subject !== typeof tmpl) this.error("is not a " + (typeof tmpl));
-            else if(subject !== tmpl) this.error("does not equal " + tmpl);
+            if(subject !== tmpl) this.error("does not equal " + tmpl);
             break;
 
             case 'boolean':
@@ -155,8 +159,7 @@ Validator.create = function(template) {
 Validator.IsAnything = function(val) { };
 
 Validator.IsDefined = function(val) {
-    if(undefined === val) this.error('is undefined');
-    else if(null === val) this.error('is null');
+    if(undefined === val || null === val) this.error('is not defined');
     else return true;
 };
 
@@ -173,7 +176,7 @@ Validator.IsNumber = function(val) {
 
 Validator.IsInteger = function(val) {
     if(Validator.IsNumber.call(this, val)) {
-        if(val % 1 !== 0) this.error(" is not an integer.");
+        if(val % 1 !== 0) this.error("is not an integer");
         else return true;
     }
 };

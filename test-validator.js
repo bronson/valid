@@ -7,104 +7,103 @@ var Validator = require('./validator');
 // Modifies the Validator to ensure expected errors are caught
 var Checker = function(template, error) {
   Validator.call(this, template, error);
+  this.error_strings = [];
 }
-Checker.prototype.constructor = Checker;
+Checker.prototype.constructor = Checker;    // is this necessary?
 Checker.prototype = new Validator();
 
-
-// To make an invalid schema pass: Checker.create(null).invalid("1 is not null").validate(1)
-Checker.prototype.invalid = function(strs) {
-  this.error_strings = (strs instanceof Array ? strs : [strs]);
-  return this;
-}
-
 Checker.prototype.error = function(msg) {
-  msg = this.error_str(msg);
-  if(this.error_strings) {
-    if(this.error_strings[0] == msg) {
-      this.error_strings.shift();
-    } else {
-      throw "expected <<" + this.error_strings[0] + ">> but got <<" + msg + ">>";
-    }
+  this.error_strings.push(this.error_str(msg));
+}
+
+Checker.prototype.result = function(expected) {
+  if(expected === undefined) expected = [];
+  if(typeof expected == 'string') expected = [expected];
+  var actual = this.error_strings;
+
+  if(expected.length == 0 && actual.length > 0) {
+    throw "expected no error but got [" + actual + "]";
+  } else if(expected.length > 0 && actual.length == 0) {
+    throw "expected [" + expected + "] but got nothing.";
+  } else if(expected.length != actual.length) {
+    throw "expected " + expected.length + " [" + expected +
+      "] but got " + actual.length + " [" + actual + "]";
   } else {
-    throw "expected no error but got <<" + msg + ">>";
+    for(var i=0; i<expected.length; i++) {
+      if(expected[i] !== actual[i]) {
+        throw "expected [" + expected + "] but got [" + actual[i] + "] (they differ at " + i + ")";
+      }
+    }
+    // expected and actual are identical
   }
 }
 
-Checker.prototype.validate = function(object) {
-  Validator.prototype.validate.call(this, object);
-  if(this.error_strings && this.error_strings.length > 0) {
-    throw "expected <<" + this.error_strings[0] + ">> but got nothing.";
-  }
-}
 
 Checker.create = function(template) {
-    return new this(template);
+  return new this(template);
 };
 
 
+function schema(tmpl) { return Checker.create(tmpl); }
+
 // constants
-Checker.create(null).validate(null);
-Checker.create(null).invalid("1 is not null").validate(1);
-Checker.create(null).invalid("undefined is not null").validate(undefined);
-Checker.create(undefined).validate(undefined);
-Checker.create(undefined).invalid("1 is not undefined").validate(1);
-Checker.create(undefined).invalid("null is not undefined").validate(null);
+schema( null      ).validate( null      ).result();   // same as Validator.create(null).validate(null)
+schema( null      ).validate( 1         ).result("1 is not null");
+schema( null      ).validate( undefined ).result("undefined is not null");
 
-Checker.create(true).validate(true);
-Checker.create(false).validate(false);
-Checker.create(true).invalid("false is not true").validate(false);
-Checker.create(false).invalid("true is not false").validate(true);
-Checker.create(false).invalid("undefined is not false").validate(undefined);
+schema( undefined ).validate( undefined ).result();
+schema( undefined ).validate( 1         ).result("1 is not undefined");
+schema( undefined ).validate( null      ).result("null is not undefined");
 
-Checker.create('abc').validate('abc');
-Checker.create(123).validate(123);
-Checker.create(/^abc$/).validate('abc');
-Checker.create(/^abc$/).invalid("'abcd' doesn't match /^abc$/").validate('abcd');
+schema( true  ).validate( true  ).result();
+schema( false ).validate( false ).result();
+schema( true  ).validate( false ).result("false is not true");
+schema( false ).validate( true  ).result("true is not false");
+schema( false ).validate(undefined).result("undefined is not false");
 
+schema( 'abc'   ).validate( 'abc'  ).result();
+schema( 'abc'   ).validate( 'abc ' ).result("'abc ' does not equal 'abc'");
+schema( 123     ).validate( 123    ).result();
+schema( 123     ).validate( 123.1  ).result("123.1 does not equal 123");
+schema( /^abc$/ ).validate( 'abc'  ).result();
+schema( /^abc$/ ).validate( 'abcd' ).result("'abcd' doesn't match /^abc$/");
 
-Checker.create({abc: 123}).validate({abc: 123});
-Checker.create({abc: 123, def: 456}).invalid("[object Object] is missing def").validate({abc: 123});
-Checker.create({abc: 123}).invalid("[object Object] has def but template doesn't").validate({abc: 123, def: 456});
+schema( {abc: 123}           ).validate( {abc: 123}           ).result();
+schema( {abc: 123, def: 456} ).validate( {abc: 123}           ).result("[object Object] is missing def");
+schema( {abc: 123}           ).validate( {abc: 123, def: 456} ).result("[object Object] has def but template doesn't");
 
-Checker.create(function (val) { if(val != 123) this.error(val, "nope!"); }).validate(123);
+schema( {a: {b: {c: 1}}}     ).validate( {a: {b: {c: 2}}}     ).result("a,b,c: 2 does not equal 1 for [object Object]");  // TODO: improve error message
 
+schema( function (val) { if(val != 123) this.error("nope!"); } ).validate(123).result();
+schema( function (val) { if(val == 123) this.error("is equal"); } ).validate(123).result("123 is equal");
 
-Checker.create(Validator.IsAnything).validate(123);
-Checker.create(Validator.IsAnything).validate(undefined);
-Checker.create(Validator.IsDefined).validate(123);
-Checker.create(Validator.IsNumber).validate(123);
-Checker.create(Validator.IsInteger).validate(123.0);
-Checker.create(Validator.IsNotBlank).validate('0');
-Checker.create(Validator.IsOptional(Validator.IsInteger)).validate(undefined);
-Checker.create(Validator.IsOptional(Validator.IsInteger)).validate(12);
+// compare functions
+schema( Validator.IsAnything    ).validate(123).result();
+schema( Validator.IsAnything    ).validate(undefined).result();
+schema( Validator.IsDefined     ).validate(123).result();
+schema( Validator.IsDefined     ).validate(null).result("null is not defined");
+schema( Validator.IsDefined     ).validate(undefined).result("undefined is not defined");
+schema( Validator.IsNumber      ).validate(123).result();
+schema( Validator.IsInteger     ).validate(123.0).result();
+schema( Validator.IsInteger     ).validate(123.1).result("123.1 is not an integer");
+schema( Validator.IsNotBlank    ).validate('0').result();
+schema( Validator.IsNotBlank    ).validate(' a').result("' a' has leading whitespace");
+schema( Validator.IsNotBlank    ).validate('').result("'' can't be blank");
 
-Checker.create([12, 13]).validate([12, 13]);
-Checker.create([12, Validator.IsInteger]).validate([12, 13]);
+schema( Validator.IsOptional(Validator.IsInteger) ).validate(undefined).result();
+schema( Validator.IsOptional(Validator.IsInteger) ).validate(12).result();
+
+// arrays
+schema( [12, 13] ).validate( [12, 13] ).result();
+schema( [12, 13] ).validate( [12, 14]  ).result("1: 14 does not equal 13 for 12,14"); // TODO improve error message
+schema( [12, 13] ).validate( 12        ).result("12 is not an Array");
+schema( [12, 13] ).validate( undefined ).result("undefined is not an Array");
+schema( [12, Validator.IsInteger] ).validate( [12, 13] ).result();
 
 var _ = Validator;
-Checker.create(_.IsArray(_.IsInteger)).validate([12, 13, 14]);
-Checker.create(_.IsArray(_.IsInteger, {min: 1, max: 3})).validate([12, 13]);
+schema( _.IsArray(_.IsInteger) ).validate([12, 13, 14]).result();
+schema( _.IsArray(_.IsInteger, {min: 1, max: 3}) ).validate([12, 13]).result();
+schema( _.IsArray(_.IsString,  {min: 1, max: 3}) ).validate([12, 13]).result(["0: 12 is number, not string for 12,13", "1: 13 is number, not string for 12,13"]); // TODO: improve error message
+schema( _.IsArray(_.IsInteger, {min: 3, max: 4}) ).validate([12, 13]).result("12,13 has fewer than 3 elements");
+schema( _.IsArray(_.IsInteger, {min: 1, max: 0}) ).validate([12, 13]).result("12,13 has more than 0 elements");
 
-
-/*
-
-Validator.create(function (val) { this.error("nope for " + val + "!") }).validate(123);
-
-Validator.create(Validator.IsDefined).validate(null);
-Validator.create(Validator.IsDefined).validate(undefined);
-Validator.create(Validator.IsInteger).validate(123.1);
-Validator.create(Validator.IsNotBlank).validate(' a');
-Validator.create(Validator.IsNotBlank).validate('');
-Validator.create(Validator.IsOptional(Validator.IsInteger)).validate(12.1);
-
-Validator.create([12, 13]).validate([12, 14]);
-Validator.create([12, 13]).validate(12);
-Validator.create([12, 13]).validate(undefined);
-
-with(Validator) {
-  Validator.create(IsArray(IsString, {min: 1, max: 3})).validate([12, 13]);
-  Validator.create(IsArray(IsInteger, {min: 3, max: 4})).validate([12, 13]);
-  Validator.create(IsArray(IsInteger, {min: 1, max: 0})).validate([12, 13]);
-}
-*/

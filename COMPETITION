@@ -1,0 +1,17 @@
+https://github.com/chriso/node-validator
+
+Unfortunately node-validator needs to run immediately.  You can't
+declare the validations that will be run later.
+
+The syntax is pretty sweet: check('abc').len(6,12).isEmail();
+
+
+
+https://github.com/doffm/Onvalid
+
+Why didn't I see this one first???  It's not bad.
+Doesn't allow static schemas ({12} doesn't work, must use {__.eq(12)
+Doesn't deeply nest schemas well.
+Don't like the error messages.
+Minor downside: uses underscore.
+
