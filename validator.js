@@ -69,6 +69,12 @@ Validator.prototype = {
             case 'object':
             if(tmpl === null) {
                 if(subject !== null) this.error("is not null");
+            } else if(tmpl instanceof Array) {
+                if(subject instanceof Array) {
+                    this.validate_array(subject, tmpl);
+                } else {
+                    this.error("is not an Array");
+                }
             } else {
                 this.validate_object(subject, tmpl);
             }
@@ -82,6 +88,17 @@ Validator.prototype = {
             this.error("Error in template: what is " + (typeof tmpl) + "?");
         }
         this.subject = save_subject;
+    },
+
+    validate_array: function(subject, tmpl) {
+        if(subject.length != tmpl.length) this.error(" has " + subject.length + " items, not " + tmpl.length);
+        var i, end = tmpl.length;
+        if(subject.length < end) end = subject.length;
+        for(i=0; i<end; i++) {
+            this.path.push(i);
+            this.validate_field(subject[i], tmpl[i]);
+            this.path.pop();
+        }
     },
 
     validate_object: function(subject, tmpl) {
@@ -104,7 +121,7 @@ Validator.prototype = {
     }
 };
 
-// "Validator.create(template)" is the same as new "Validator(template)"
+// "Validator.create(template)" is the same as "new Validator(template)"
 Validator.create = function(template) {
     return new this(template);
 };
@@ -159,12 +176,22 @@ Validator.IsOptional = function(template) {
 
 Validator.IsArray = function(template, opts) {
     return function(val) {
-        if(typeof val !== 'array') ValidationError(val, "is not an array");
-        if(opts.min && val.length < opts.min) ValidationError(val, "array has fewer than " + opts.min + " elements");
-        if(opts.max && val.length > opts.max) ValidationError(val, "array has more than " + opts.max + " elements");
-        return true;
+        if(typeof val === 'object' && val instanceof Array) {
+            if(opts) {
+                if(opts.min !== undefined && val.length < opts.min) this.error("has fewer than " + opts.min + " elements");
+                if(opts.max !== undefined && val.length > opts.max) this.error("has more than " + opts.max + " elements");
+            }
+            for(var i=0; i<val.length; i++) {
+                this.path.push(i);
+                this.validate_field(val[i], template);
+                this.path.pop();
+            }
+        } else {
+            this.error("is not an array, it's a " + typeof val);
+        }
     };
 };
+
 
 module.exports = Validator;
 

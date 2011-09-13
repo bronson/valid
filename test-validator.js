@@ -21,6 +21,15 @@ Validator.create(Validator.IsNotBlank).validate('0');
 Validator.create(Validator.IsOptional(Validator.IsInteger)).validate(undefined);
 Validator.create(Validator.IsOptional(Validator.IsInteger)).validate(12);
 
+Validator.create([12, 13]).validate([12, 13]);
+Validator.create([12, Validator.IsInteger]).validate([12, 13]);
+
+with(Validator) {
+  Validator.create(IsArray(IsInteger)).validate([12, 13, 14]);
+  Validator.create(IsArray(IsInteger, {min: 1, max: 3})).validate([12, 13]);
+}
+
+
 /*
 Validator.create(null).validate(1);
 Validator.create(undefined).validate(1);
@@ -42,4 +51,9 @@ Validator.create(Validator.IsInteger).validate(123.1);
 Validator.create(Validator.IsNotBlank).validate(' a');
 Validator.create(Validator.IsNotBlank).validate('');
 Validator.create(Validator.IsOptional(Validator.IsInteger)).validate(12.1);
+
+Validator.create([12, 13]).validate([12, 14]);
+Validator.create([12, 13]).validate(12);
+Validator.create([12, 13]).validate(undefined);
+
 */
