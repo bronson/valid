@@ -5,42 +5,27 @@
 var Valid = function Valid() { };
 module.exports = Valid;
 
-// The chain object is the 'this' object passed to each function in the chain.
-// The first function in the chain creates it, the rest use it.
+// The chain object is passed to each function in the chain.
+// The first function in the chain creates and sets it, the rest add to it.
 Valid.Chain = function Chain() {
-    this._queue = [];         // the list of validations to perform
+    this._valid = undefined;  // set to false if any validations fail
     this._value = undefined;  // the value that we're validating
-};
-
-
-
-//         error handlers
-
-//   var subchain = Valid.errorHandler(Valid.Boolean).equal(1);
-//   var superchain = Valid.errorHandler(Valid.Throw).not(subchain);
-// The error handler on the subchain (equal(1)) must be the same as the superchain (not())
-// First the Boolean handler installs itself, then errorHandler removes it and installs
-// the superchain's Throw handler.  A chain can go from any error handler  to any other!
-// Make sure errorHandler() cleans up after your handler and override it if not.
-//   TODO: this is overcomplex.  Maybe validate should always return a boolean?
-
-Valid.Throw = function Throw() {
-    this.error = function ThrowError(msg) { throw this.ErrorMessage(msg); };
-};
-
-Valid.Console = function Console(msg) {
-    this.error = function ConsoleError(msg) { console.log(this.ErrorMessage(mgs)); this.AbortChain(); };
-};
-
-Valid.Boolean = function Boolean(msg) {
-    this.error = function BooleanError(msg) { this._isInvalid = true; this.AbortChain(); };
-    var superValidate = this.validate;
-    this.validate = function BooleanValidate(val) { superValidate(val); return !this._isInvalid; };
+    this._queue = [];         // the list of validations to perform
 };
 
 
 
 //              internals
+
+Valid.Override = function Override(name, method) {
+    if(this === Valid) throw "Don't override root Valid object!";
+    var superMethod = this[name];
+    this[name] = function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(superMethod);
+        return method.apply(this, args);
+    };
+}
 
 // surround all chainable calls with Chained.  See match() for an example.
 Valid.Chained = function Chained(fn) {
@@ -55,22 +40,14 @@ Valid.Chained = function Chained(fn) {
 };
 
 
-Valid.InstallErrorHandler = function InstallErrorHandler(handler) {
-    if(this.currentHandler === handler) return;
-    this.validate = Valid.validate;   // clean up after the old error handler
-    handler.call(this);               // and install the new one
-    this.currentHandler = handler;
-};
-
-
-// Computes the final error message, meant to be overridden.
+// Computes the final error message, meant to be overridden.  TODO: not true anymore?
 Valid.ErrorMessage = function ErrorMessage(message) {
     return this._value + " " + message;
 };
 
 
 Valid.ValidateQueue = function ValidateQueue(queue) {
-    for(var i=0; i<queue.length; i++) {
+    for(var i=0; i<queue.length && this._valid === true; i++) {
         queue[i].call(this);
     }
 }
@@ -93,43 +70,42 @@ Valid.AddTest = function AddTest(test) {
 
 //          client API
 
-Valid.errorHandler = function(handler) {
-    return this.Chained(function ErrorHandler() {
-        this.InstallErrorHandler(handler);
-    });
-};
-
-
-Valid.check = function(val) {
-    return this.Chained(function Check() {
+Valid.check = function Check(val) {
+    return this.Chained(function check() {
         // patch the Chain to return results immediately
     });
 };
 
 
-Valid.validate = function(value) {
-    return this.Chained(function Validate() {
+Valid.validate = function Validate(value) {
+    return this.Chained(function validate() {
+        this._valid = true;
         this._value = value;
         this.ValidateQueue(this._queue);
     });
 };
 
 
-//            final setup
+Valid.error = function error(message) {
+    if(this === Valid) throw "Called error with no validations!"
+    this._valid = false;
+};
 
-Valid.InstallErrorHandler(Valid.Throw);    // set default error handler
+
+Valid.throwErrors = function throwErrors() {
+    return this.Chained(function throwErrors() {
+        this.Override('error', function(superCall, message) {
+            superCall.call(message);
+            throw this.ErrorMessage(message);
+        });
+    });
+};
 
 
 //            core tests
 
 Valid.and = function() {
     var queues = [];
-
-    // set the error handler of all subchains to be the same as ours
-    for(var i=0; i < arguments.length; i++) {
-        queues.push(arguments[i]._queue);
-    }
-
     return this.Chained(function() {
         this.AddTest(function And() {
             for(var i=0; i<queues.length; i++) {
