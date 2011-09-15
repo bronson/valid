@@ -8,7 +8,6 @@ module.exports = Valid;
 // The chain object is passed to each function in the chain.
 // The first function in the chain creates and sets it, the rest add to it.
 Valid.Chain = function Chain() {
-    // this._value = undefined;  // the value that we're validating
     // this._queue = [];         // the list of validation tests to perform
 };
 
@@ -30,21 +29,20 @@ Valid.Chained = function Chained(fn) {
 
 
 // Computes the final error message, meant to be overridden.  TODO: not true anymore?
-Valid.ErrorMessage = function ErrorMessage(message) {
-    return this._value + " " + message;
+Valid.ErrorMessage = function ErrorMessage(value, message) {
+    return value + " " + message;
 };
 
 
-Valid.ValidateQueue = function ValidateQueue(queue) {
+Valid.ValidateQueue = function ValidateQueue(queue, value) {
     for(var i=0; i<queue.length; i++) {
-        var result = queue[i].call(this, this._value);
+        var result = queue[i].call(this, value);
         if(result) return result;
     }
 };
 
 Valid.RunTests = function RunTests(value) {
-    this._value = value;
-    result = this.ValidateQueue(this._queue);
+    result = this.ValidateQueue(this._queue, value);
     if(result && this._errorHandler) {
         return this._errorHandler(value, result)
     }
@@ -85,7 +83,7 @@ Valid.validate = function Validate(value) {
 Valid.throwErrors = function throwErrors() {
     return this.Chained(function throwErrors() {
         this._errorHandler = function ThrowErrors(value, message) {
-            throw this.ErrorMessage(message);
+            throw this.ErrorMessage(value, message);
         };
     });
 };
