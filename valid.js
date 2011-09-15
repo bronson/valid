@@ -21,12 +21,6 @@ Valid.Chained = function Chained(fn) {
 };
 
 
-// Computes the final error message, meant to be overridden.  TODO: not true anymore?
-Valid.ErrorMessage = function ErrorMessage(value, message) {
-    return value + " " + message;
-};
-
-
 Valid.ValidateQueue = function ValidateQueue(queue, value) {
     for(var i=0; i<queue.length; i++) {
         var result = queue[i].call(this, value);
@@ -76,7 +70,7 @@ Valid.validate = function Validate(value) {
 Valid.throwErrors = function throwErrors() {
     return this.Chained(function throwErrors() {
         this._errorHandler = function ThrowErrors(value, message) {
-            throw this.ErrorMessage(value, message);
+            throw value + " " + message;
         };
     });
 };
