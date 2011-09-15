@@ -5,8 +5,6 @@ var Valid = function Valid() { };
 module.exports = Valid;
 
 
-//              internals
-
 Valid.GetChain = function GetChain() {
     if(this === Valid) {
         // we're the first item in a chain so create a Chain object
@@ -16,7 +14,6 @@ Valid.GetChain = function GetChain() {
     }
     return this;
 };
-
 
 Valid.ValidateQueue = function ValidateQueue(queue, value) {
     for(var i=0; i<queue.length; i++) {
@@ -33,12 +30,6 @@ Valid.RunTests = function RunTests(value) {
     return result;
 };
 
-// creates simple tests, just supply a function returning true (valid) or false (invalid).
-Valid.CreateSimpleTest = function CreateSimpleTest(test) {
-    return this.GetChain().AddTest(test);
-};
-
-
 Valid.AddTest = function AddTest(test) {
     if(this._queue === undefined) this._queue = [];
     this._queue.push(test);
@@ -47,17 +38,18 @@ Valid.AddTest = function AddTest(test) {
 
 
 
-//          client API
+// verification API
 
 Valid.check = function Check(value) {
     var self = this.GetChain();
 };
 
-
 Valid.validate = function Validate(value) {
     return this.GetChain().RunTests(value);
 };
 
+
+// custom error handlers
 
 Valid.throwErrors = function throwErrors() {
     self = this.GetChain();
@@ -68,11 +60,11 @@ Valid.throwErrors = function throwErrors() {
 };
 
 
-//            core tests
+// core tests
 
 Valid.and = function and() {
     var chains = arguments;
-    return this.CreateSimpleTest( function And(value) {
+    return this.GetChain().AddTest( function And(value) {
         for(var i=0; i<chains.length; i++) {
             result = this.ValidateQueue(chains[i]._queue);
             if(result) return result;
@@ -81,7 +73,7 @@ Valid.and = function and() {
 };
 
 Valid.equal = function equal(wanted) {
-    return this.CreateSimpleTest( function Equal(value) {
+    return this.GetChain().AddTest( function Equal(value) {
         if(value !== wanted) return "doesn't equal " + wanted;
     });
 };
@@ -90,7 +82,7 @@ Valid.equal = function equal(wanted) {
 
 
 Valid.typeOf = function typeOf(type) {
-    return this.CreateSimpleTest(function TypeOf(value) {
+    return this.GetChain().AddTest(function TypeOf(value) {
         if(typeof value !== type) return "is of type " + (typeof value) + " not " + type;
     });
 };
@@ -105,7 +97,7 @@ Valid.isObject      = Valid.typeOf('object');
 
 Valid.match = function match(pattern, modifiers) {
     if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
-    return this.CreateSimpleTest( function Match(value) {
+    return this.GetChain().AddTest( function Match(value) {
         if(!value.match(pattern)) return "doesn't match " + pattern;
     });
 };
