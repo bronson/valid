@@ -7,17 +7,14 @@ module.exports = Valid;
 
 //              internals
 
-// surround all chainable calls with Chained.  See match() for an example.
-Valid.Chained = function Chained(fn) {
-    var self = this;
-    if(self === Valid) {     // need a new chain
+Valid.GetChain = function GetChain() {
+    if(this === Valid) {
+        // we're the first item in a chain so create a Chain object
         var chain = function Chain() {};
         chain.prototype = this;
-        self = new chain();
+        return new chain();
     }
-
-    fn.call(self);
-    return self;
+    return this;
 };
 
 
@@ -31,22 +28,21 @@ Valid.ValidateQueue = function ValidateQueue(queue, value) {
 Valid.RunTests = function RunTests(value) {
     result = this.ValidateQueue(this._queue, value);
     if(result && this._errorHandler) {
-        return this._errorHandler(value, result)
+        return this._errorHandler(value, result);
     }
     return result;
 };
 
 // creates simple tests, just supply a function returning true (valid) or false (invalid).
 Valid.CreateSimpleTest = function CreateSimpleTest(test) {
-    return this.Chained(function createSimpleTest() {
-        this.AddTest(test);
-    });
+    return this.GetChain().AddTest(test);
 };
 
 
 Valid.AddTest = function AddTest(test) {
     if(this._queue === undefined) this._queue = [];
     this._queue.push(test);
+    return this;
 };
 
 
@@ -54,25 +50,21 @@ Valid.AddTest = function AddTest(test) {
 //          client API
 
 Valid.check = function Check(value) {
-    return this.Chained(function check() {
-        // patch the Chain to return results immediately
-    });
+    var self = this.GetChain();
 };
 
 
 Valid.validate = function Validate(value) {
-    return this.Chained(function validate() {
-        return this.RunTests(value);
-    });
+    return this.GetChain().RunTests(value);
 };
 
 
 Valid.throwErrors = function throwErrors() {
-    return this.Chained(function throwErrors() {
-        this._errorHandler = function ThrowErrors(value, message) {
-            throw value + " " + message;
-        };
-    });
+    self = this.GetChain();
+    self._errorHandler = function ThrowErrors(value, message) {
+        throw value + " " + message;
+    };
+    return self;
 };
 
 
