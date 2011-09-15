@@ -8,24 +8,26 @@ module.exports = Valid;
 // The chain object is passed to each function in the chain.
 // The first function in the chain creates and sets it, the rest add to it.
 Valid.Chain = function Chain() {
-    this._valid = undefined;  // set to false if any validations fail
-    this._value = undefined;  // the value that we're validating
-    this._queue = [];         // the list of validations to perform
+    // this._errors = undefined; // list of validation errors for this object
+    // this._value = undefined;  // the value that we're validating
+    // this._queue = [];         // the list of validations to perform
 };
 
 
 
 //              internals
 
+// Override a method with your function. The previous method is passed as 1st arg.
 Valid.Override = function Override(name, method) {
-    if(this === Valid) throw "Don't override root Valid object!";
+    if(this === Valid) throw "Don't modify root object!";
     var superMethod = this[name];
     this[name] = function() {
         var args = Array.prototype.slice.call(arguments);
         args.unshift(superMethod);
         return method.apply(this, args);
     };
-}
+    return this;
+};
 
 // surround all chainable calls with Chained.  See match() for an example.
 Valid.Chained = function Chained(fn) {
@@ -47,10 +49,10 @@ Valid.ErrorMessage = function ErrorMessage(message) {
 
 
 Valid.ValidateQueue = function ValidateQueue(queue) {
-    for(var i=0; i<queue.length && this._valid === true; i++) {
+    for(var i=0; i<queue.length && this._errors.length === 0; i++) {
         queue[i].call(this);
     }
-}
+};
 
 // creates simple tests, just supply a function returning true (valid) or false (invalid).
 Valid.CreateSimpleTest = function CreateSimpleTest(message,test) {
@@ -63,8 +65,9 @@ Valid.CreateSimpleTest = function CreateSimpleTest(message,test) {
 
 
 Valid.AddTest = function AddTest(test) {
+    if(this._queue === undefined) this._queue = [];
     this._queue.push(test);
-}
+};
 
 
 
@@ -79,7 +82,7 @@ Valid.check = function Check(val) {
 
 Valid.validate = function Validate(value) {
     return this.Chained(function validate() {
-        this._valid = true;
+        this._errors = [];
         this._value = value;
         this.ValidateQueue(this._queue);
     });
@@ -87,15 +90,15 @@ Valid.validate = function Validate(value) {
 
 
 Valid.error = function error(message) {
-    if(this === Valid) throw "Called error with no validations!"
-    this._valid = false;
+    if(this === Valid) throw "Called error with no validations!";
+    this._errors.push(message);
 };
 
 
 Valid.throwErrors = function throwErrors() {
     return this.Chained(function throwErrors() {
-        this.Override('error', function(superCall, message) {
-            superCall.call(message);
+        this.Override('error', function ThrowErrors(superCall, message) {
+            superCall.call(this, message);
             throw this.ErrorMessage(message);
         });
     });
@@ -113,7 +116,7 @@ Valid.and = function() {
             }
         });
     });
-}
+};
 
 Valid.equal = function equal(wanted) {
     return this.CreateSimpleTest(

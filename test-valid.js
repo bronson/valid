@@ -11,7 +11,7 @@ Valid.fail = function(message) {
 
 // Valid.fail('hi').validate(12);
 
-Valid.equal(1).validate(1);
+Valid.throwErrors().equal(1).validate(1);
 
 Valid.and(Valid.typeOf('string'),Valid.match(/^abc$/)).validate('abc');
 
