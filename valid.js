@@ -45,13 +45,12 @@ Valid.Boolean = function Boolean(msg) {
 // surround all chainable calls with Chained.  See match() for an example.
 Valid.Chained = function Chained(fn) {
     var self = this;
-    if(self === Valid) {
-        // This is the first item in the chain so create a new Chain
+    if(self === Valid) {     // need a new chain
         this.Chain.prototype = this;
         self = new this.Chain();
     }
 
-    fn.call(self);    // now 'this' is set correctly
+    fn.call(self);
     return self;
 };
 
@@ -69,6 +68,12 @@ Valid.ErrorMessage = function ErrorMessage(message) {
     return this._value + " " + message;
 };
 
+
+Valid.ValidateQueue = function ValidateQueue(queue) {
+    for(var i=0; i<queue.length; i++) {
+        queue[i].call(this);
+    }
+}
 
 // creates simple tests, just supply a function returning true (valid) or false (invalid).
 Valid.CreateSimpleTest = function CreateSimpleTest(message,test) {
@@ -105,9 +110,7 @@ Valid.check = function(val) {
 Valid.validate = function(value) {
     return this.Chained(function Validate() {
         this._value = value;
-        for(var i=0; i<this._queue.length; i++) {
-            this._queue[i].call(this);
-        }
+        this.ValidateQueue(this._queue);
     });
 };
 
@@ -120,23 +123,23 @@ Valid.InstallErrorHandler(Valid.Throw);    // set default error handler
 //            core tests
 
 Valid.and = function() {
-    var chains = [];
+    var queues = [];
 
     // set the error handler of all subchains to be the same as ours
     for(var i=0; i < arguments.length; i++) {
-        chains.push(arguments[i].errorHandler(this.currentHandler));
+        queues.push(arguments[i]._queue);
     }
 
     return this.Chained(function() {
         this.AddTest(function And() {
-            for(var i=0; i < chains.length; i++) {
-                chains[i].validate(this._value);
+            for(var i=0; i<queues.length; i++) {
+                this.ValidateQueue(queues[i]);
             }
         });
     });
 }
 
-Valid.equal = function(wanted) {
+Valid.equal = function equal(wanted) {
     return this.CreateSimpleTest(
         "doesn't equal " + wanted,
         function Equal(value) { return value === wanted; }
@@ -146,7 +149,7 @@ Valid.equal = function(wanted) {
 //Valid.notEqual = Valid.not(Valid.equal);
 
 
-Valid.typeOf = function(type) {
+Valid.typeOf = function typeOf(type) {
     return this.CreateSimpleTest(
         "is not of type " + type, // TODO: "is a number not string"
         function TypeOf(value) { return typeof value === type; }
@@ -161,7 +164,7 @@ Valid.isString      = Valid.typeOf('string');
 Valid.isFunction    = Valid.typeOf('function');
 Valid.isObject      = Valid.typeOf('object');
 
-Valid.match = function(pattern, modifiers) {
+Valid.match = function match(pattern, modifiers) {
     if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
     return this.CreateSimpleTest(
         "doesn't match " + pattern,
