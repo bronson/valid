@@ -7,7 +7,7 @@ module.exports = Valid;
 // The chain object is the 'this' object passed to each function in the chain.
 // The first function in the chain creates it, the rest use it.
 Valid.Chain = function Chain() {
-    this._field = '.';        // the name of the field we're validating
+    this._queue = [];         // the list of validations to perform
     this._value = undefined;  // the value that we're validating
 };
 
@@ -36,7 +36,7 @@ Valid.Throw();    // use the Throw error handler by default
 
 //              internals
 
-// AsChain needs to surround all chainable calls, otherwise 'this' might be wrong.
+// surround all chainable calls with AsChain to ensure 'this' is correct.
 Valid.AsChain = function AsChain(fn) {
     var self = this;
     if(self === Valid) {
@@ -50,50 +50,58 @@ Valid.AsChain = function AsChain(fn) {
 };
 
 
-// computes the final error message
-Valid.ErrorMessage = function ErrorMessage(error_message) {
-    msg = "";
-    if(this._field !== '.') msg += this._field + " ";
-    msg += error_message;
-    return msg;
+// Computes the final error message, meant to be overridden.
+Valid.ErrorMessage = function ErrorMessage(message) {
+    return "value " + message;
 };
 
 
-// Used to create simple tests.  Just supply function returning true (valid) or false (invalid).
-Valid.AddTest = function AddTest(msg,func) {
-    return this.AsChain(function() {
-        this.grind = function grind(value) {
-            this._value = value;
-            if(!func.call(this,value)) this.error(msg);
-        };
+// creates simple tests, just supply a function returning true (valid) or false (invalid).
+Valid.CreateTest = function CreateTest(message,test) {
+    return this.AsChain(function CreateTest() {
+        this.AddTest(function() {
+            if(!test.call(this,this._value)) this.error(message);
+        });
     });
 };
+
+
+Valid.AddTest = function AddTest(test) {
+    this._queue.push(test);
+}
 
 
 
 //          client API
 
 Valid.errorHandler = function(handler) {
-    return this.AsChain(function() { handler.call(this); });
+    return this.AsChain(function ErrorHandler() { handler.call(this); });
 };
 
 
 Valid.check = function(val) {
-    return this.AsChain(function() {
+    return this.AsChain(function Check() {
         // patch the Chain to return results immediately
     });
 };
 
 
-Valid.validate = function(val) {
-    return this.AsChain(function() { this.grind(val); });
+Valid.validate = function(value) {
+    return this.AsChain(function Validate() {
+        this._value = value;
+        for(var i=0; i<this._queue.length; i++) {
+            this._queue[i].call(this);
+        }
+    });
 };
 
 
 Valid.typeOf = function(type) {
-    return Valid.AddTest(
+    return Valid.CreateTest(
         "is of type " + type, // TODO: "is a number not string"
-        function(val) { return typeof val === type; }
+        function TypeOf(value) {
+            return typeof value === type;
+        }
     );
 };
 
@@ -102,7 +110,7 @@ Valid.match = function(pattern, modifiers) {
     if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
     return Valid.CreateTest(
         "doesn't match " + pattern,
-        function(val) { val.match(pattern); }
+        function Match(val) { val.match(pattern); }
     );
 };
 
