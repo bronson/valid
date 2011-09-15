@@ -2,7 +2,18 @@ var Valid = require('./valid');
 
 var isString = Valid.typeOf('string');
 isString.validate('abc');
+Valid.match(/^abc$/).validate('abc');
 
+
+Valid.fail = function(message) {
+    return this.CreateSimpleTest(message, function Fail(value) { return false; });
+};
+
+// Valid.fail('hi').validate(12);
+
+Valid.equal(1).validate(1);
+
+Valid.and(Valid.typeOf('string'),Valid.match(/^abc$/)).validate('abc');
 
 /*
 
