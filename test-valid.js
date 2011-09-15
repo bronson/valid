@@ -1,7 +1,8 @@
 var Valid = require('./valid');
 
-var isString = Valid.typeOf('string');
+var isString = Valid.typeOf('string').throwErrors();
 isString.validate('abc');
+
 Valid.match(/^abc$/).validate('abc');
 
 

@@ -8,26 +8,13 @@ module.exports = Valid;
 // The chain object is passed to each function in the chain.
 // The first function in the chain creates and sets it, the rest add to it.
 Valid.Chain = function Chain() {
-    // this._errors = undefined; // list of validation errors for this object
     // this._value = undefined;  // the value that we're validating
-    // this._queue = [];         // the list of validations to perform
+    // this._queue = [];         // the list of validation tests to perform
 };
 
 
 
 //              internals
-
-// Override a method with your function. The previous method is passed as 1st arg.
-Valid.Override = function Override(name, method) {
-    if(this === Valid) throw "Don't modify root object!";
-    var superMethod = this[name];
-    this[name] = function() {
-        var args = Array.prototype.slice.call(arguments);
-        args.unshift(superMethod);
-        return method.apply(this, args);
-    };
-    return this;
-};
 
 // surround all chainable calls with Chained.  See match() for an example.
 Valid.Chained = function Chained(fn) {
@@ -49,17 +36,25 @@ Valid.ErrorMessage = function ErrorMessage(message) {
 
 
 Valid.ValidateQueue = function ValidateQueue(queue) {
-    for(var i=0; i<queue.length && this._errors.length === 0; i++) {
-        queue[i].call(this);
+    for(var i=0; i<queue.length; i++) {
+        var result = queue[i].call(this, this._value);
+        if(result) return result;
     }
 };
 
+Valid.RunTests = function RunTests(value) {
+    this._value = value;
+    result = this.ValidateQueue(this._queue);
+    if(result && this._errorHandler) {
+        return this._errorHandler(value, result)
+    }
+    return result;
+};
+
 // creates simple tests, just supply a function returning true (valid) or false (invalid).
-Valid.CreateSimpleTest = function CreateSimpleTest(message,test) {
-    return this.Chained(function CreateSimpleTest() {
-        this.AddTest(function SimpleTestStub() {
-            if(!test.call(this,this._value)) this.error(message);
-        });
+Valid.CreateSimpleTest = function CreateSimpleTest(test) {
+    return this.Chained(function createSimpleTest() {
+        this.AddTest(test);
     });
 };
 
@@ -73,7 +68,7 @@ Valid.AddTest = function AddTest(test) {
 
 //          client API
 
-Valid.check = function Check(val) {
+Valid.check = function Check(value) {
     return this.Chained(function check() {
         // patch the Chain to return results immediately
     });
@@ -82,57 +77,45 @@ Valid.check = function Check(val) {
 
 Valid.validate = function Validate(value) {
     return this.Chained(function validate() {
-        this._errors = [];
-        this._value = value;
-        this.ValidateQueue(this._queue);
+        return this.RunTests(value);
     });
-};
-
-
-Valid.error = function error(message) {
-    if(this === Valid) throw "Called error with no validations!";
-    this._errors.push(message);
 };
 
 
 Valid.throwErrors = function throwErrors() {
     return this.Chained(function throwErrors() {
-        this.Override('error', function ThrowErrors(superCall, message) {
-            superCall.call(this, message);
+        this._errorHandler = function ThrowErrors(value, message) {
             throw this.ErrorMessage(message);
-        });
+        };
     });
 };
 
 
 //            core tests
 
-Valid.and = function() {
-    var queues = [];
-    return this.Chained(function() {
-        this.AddTest(function And() {
-            for(var i=0; i<queues.length; i++) {
-                this.ValidateQueue(queues[i]);
-            }
-        });
+Valid.and = function and() {
+    var chains = arguments;
+    return this.CreateSimpleTest( function And(value) {
+        for(var i=0; i<chains.length; i++) {
+            result = this.ValidateQueue(chains[i]._queue);
+            if(result) return result;
+        }
     });
 };
 
 Valid.equal = function equal(wanted) {
-    return this.CreateSimpleTest(
-        "doesn't equal " + wanted,
-        function Equal(value) { return value === wanted; }
-    );
+    return this.CreateSimpleTest( function Equal(value) {
+        if(value !== wanted) return "doesn't equal " + wanted;
+    });
 };
 
 //Valid.notEqual = Valid.not(Valid.equal);
 
 
 Valid.typeOf = function typeOf(type) {
-    return this.CreateSimpleTest(
-        "is not of type " + type, // TODO: "is a number not string"
-        function TypeOf(value) { return typeof value === type; }
-    );
+    return this.CreateSimpleTest(function TypeOf(value) {
+        if(typeof value !== type) return "is of type " + (typeof value) + " not " + type;
+    });
 };
 
 Valid.isUndefined   = Valid.equal(undefined);
@@ -145,9 +128,8 @@ Valid.isObject      = Valid.typeOf('object');
 
 Valid.match = function match(pattern, modifiers) {
     if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
-    return this.CreateSimpleTest(
-        "doesn't match " + pattern,
-        function Match(val) { return val.match(pattern); }
-    );
+    return this.CreateSimpleTest( function Match(value) {
+        if(!value.match(pattern)) return "doesn't match " + pattern;
+    });
 };
 
