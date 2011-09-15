@@ -1,16 +1,8 @@
-// In practice, I don't think we need to dedup checks.
-// TODO: get rid of the Chained function?  It really increases the call stack.
-
+// valid.js Scott Bronson 2011
+// This file defines the Valid object and some core validation tests.
 
 var Valid = function Valid() { };
 module.exports = Valid;
-
-// The chain object is passed to each function in the chain.
-// The first function in the chain creates and sets it, the rest add to it.
-Valid.Chain = function Chain() {
-    // this._queue = [];         // the list of validation tests to perform
-};
-
 
 
 //              internals
@@ -19,8 +11,9 @@ Valid.Chain = function Chain() {
 Valid.Chained = function Chained(fn) {
     var self = this;
     if(self === Valid) {     // need a new chain
-        this.Chain.prototype = this;
-        self = new this.Chain();
+        var chain = function Chain() {};
+        chain.prototype = this;
+        self = new chain();
     }
 
     fn.call(self);
