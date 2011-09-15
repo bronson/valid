@@ -15,37 +15,29 @@ Valid.GetChain = function GetChain() {
     return this;
 };
 
-Valid.ValidateQueue = function ValidateQueue(queue, value) {
-    for(var i=0; i<queue.length; i++) {
-        var result = queue[i].call(this, value);
-        if(result) return result;
-    }
-};
-
-Valid.RunTests = function RunTests(value) {
-    result = this.ValidateQueue(this._queue, value);
-    if(result && this._errorHandler) {
-        return this._errorHandler(value, result);
-    }
-    return result;
-};
-
 Valid.AddTest = function AddTest(test) {
     if(this._queue === undefined) this._queue = [];
     this._queue.push(test);
     return this;
 };
 
-
-
-// verification API
-
-Valid.check = function Check(value) {
-    var self = this.GetChain();
+Valid.ValidateQueue = function ValidateQueue(queue, value) {
+    for(var i=0; i<queue.length; i++) {
+        var error = queue[i].call(this, value);
+        if(error) return error;
+    }
 };
 
-Valid.validate = function Validate(value) {
-    return this.GetChain().RunTests(value);
+
+// core api
+
+Valid.validate = function validate(value) {
+    var self = this.GetChain();
+    var error = self.ValidateQueue(self._queue, value);
+    if(error && self._errorHandler) {
+        return self._errorHandler(value, error);
+    }
+    return !error;
 };
 
 
@@ -66,8 +58,8 @@ Valid.and = function and() {
     var chains = arguments;
     return this.GetChain().AddTest( function And(value) {
         for(var i=0; i<chains.length; i++) {
-            result = this.ValidateQueue(chains[i]._queue);
-            if(result) return result;
+            var error = this.ValidateQueue(chains[i]._queue);
+            if(error) return error;
         }
     });
 };
