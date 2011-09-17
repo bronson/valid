@@ -15,8 +15,11 @@ Valid.GetChain = function GetChain() {
     return this;
 };
 
-Valid.AddTest = function AddTest(test) {
+Valid.AddTest = function AddTest(test, data) {
     if(this._queue === undefined) this._queue = [];
+    // data is optional but, if supplied, it gets added to the function object
+    // this helps investigate deep test chains when debugging
+    if(data) test.data = data;
     this._queue.push(test);
     return this;
 };
@@ -103,14 +106,28 @@ Valid.and = function and() {
             var error = this.ValidateQueue(chains[i]._queue, value);
             if(error) return error;
         }
-    });
+    }, chains);
 };
 
-Valid.or = Valid.TODO("or").define();
+Valid.or = function or() {
+    var chains = arguments;
+    return this.GetChain().AddTest(function Or(value) {
+        var errors = [];
+        for(var i=0; i<chains.length; i++) {
+            var error = this.ValidateQueue(chains[i]._queue, value);
+            if(!error) return;
+            errors.push(error);
+        }
+        return errors.length > 0 ? errors.join(" and ") : undefined;
+    }, chains);
+};
+
 Valid.not = Valid.TODO;
 
-Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)) }
+Valid.optional = Valid.TODO;
 
+// composite tests
+Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)) }
 // Some JS implementations think typeof null === 'object'
 Valid.isUndefined   = Valid.equal(undefined).define();
 Valid.isNull        = Valid.equal(null).define();
