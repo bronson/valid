@@ -19,6 +19,8 @@ Valid.isNull().assert(null);
 Valid.isNull().assert(1, "doesn't equal null");              // "is not null" would sound better
 Valid.isNull().assert(undefined, "doesn't equal null");
 
+Valid.equal(3).assert(Valid.isUndefined().isNull().isNumber()._queue.length ); // closure leak meant only one test would be queued, not all three
+
 Valid.typeOf('undefined').assert(undefined);
 // typeof null returns 'object' on some JS implementations, use isNull()
 Valid.typeOf('number').assert(123);
@@ -49,17 +51,28 @@ Valid.isString().assert(undefined, "is of type undefined not string");
 Valid.match(/^abc$/).assert('abc');
 Valid.match(/^abc$/).assert('abcd', "doesn't match /^abc$/");
 Valid.match(/^abc$/).assert(undefined, "is of type undefined not string");
+Valid.equal(2).assert( Valid.match(/^abc$/)._queue.length ); // closure leak meant all matches were appended to the same Chain
+  // todo: Valid.assert(Valid.match(/^abc$/)._queue.length).equal(2) ?
+  // todo: Valid.value(Valid.match(/^abc$/)._queue.length).equal(2).assert()
 
 // operators
 Valid.and( Valid.typeOf('string'), Valid.match(/^abc$/), Valid.match(/^a/) ).assert('abc');
 Valid.and( Valid.typeOf('string'), Valid.match(/^bbc$/) ).assert('abc', "doesn't match /^bbc$/");
 Valid.and( Valid.typeOf('number'), Valid.match(/^abc$/) ).assert('abc', "is of type string not number");
-Valid.and().test(null, "no tests!");
-Valid.and( Valid.isNull() ).test(null);
-
-
+Valid.and().assert(null);                         // passing 0 tests succeeds unconditionally
+Valid.and( Valid.isNull() ).assert(null);                            // passing 1 arg success
+Valid.and( Valid.isNull() ).assert(undefined, "doesn't equal null"); // passing 1 arg failur
 
 /*
+Valid.or( Valid.isNull(), Valid.isUndefined() ).assert(undefined);
+Valid.or( Valid.isNull(), Valid.isNull(), Valid.isNull() ).assert(null);
+Valid.or( Valid.isNull(), Valid.isNumber(), Valid.isString() ).assert('mosdef');
+Valid.or( Valid.isUndefined(), Valid.match(/^abc$/), Valid.match(/def$/) ).assert('mosdef');
+Valid.or( Valid.typeOf('string'), Valid.match(/^bbc$/) ).assert('abc', "doesn't match /^bbc$/");
+Valid.or( Valid.typeOf('number'), Valid.match(/^abc$/) ).assert('abc', "is of type string not number");
+Valid.or().test(null, "no tests!");
+Valid.or( Valid.isNull() ).test(null);
+
 schema( true  ).validate( true  ).result();
 schema( false ).validate( false ).result();
 schema( true  ).validate( false ).result("false is not true");

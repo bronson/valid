@@ -41,7 +41,7 @@ Valid.test = function test(value) {
 
 // returns true if valid, false if invalid
 Valid.check = function check(value) {
-    return !this.test();
+    return !this.test(value);
 }
 
 // raises an error if invalid
@@ -58,8 +58,14 @@ Valid.verify = function assert(value) {
 // For this to work, JS needs to a callable object with a prototype chain.
 // And, without using nonstandard __proto__, I don't see how to make that happen.
 Valid.define = function define() {
-    var that = this;
-    return function() { return that; };
+    var queue = this._queue;
+    return function() {
+        self = this.GetChain();
+        for(i=0; i<queue.length; i++) {
+            self.AddTest(queue[i]);
+        }
+        return self;
+    };
 }
 
 
@@ -70,6 +76,10 @@ Valid.fail = function fail(message) {
     return this.GetChain().AddTest( function Fail(value) {
         return message || "failed";
     });
+};
+
+Valid.TODO = function(name) {
+    return this.fail((name ? name : "this") + " is still todo")
 };
 
 Valid.equal = function equal(wanted) {
@@ -85,6 +95,7 @@ Valid.typeOf = function typeOf(type) {
     });
 };
 
+// seems somewhat useless since V.and(V.a(),V.b()) is the same as V.a().b()
 Valid.and = function and() {
     var chains = arguments;
     return this.GetChain().AddTest( function And(value) {
@@ -93,10 +104,6 @@ Valid.and = function and() {
             if(error) return error;
         }
     });
-};
-
-Valid.TODO = function(name) {
-    return Valid.fail((name ? name : "this") + " is still todo")
 };
 
 Valid.or = Valid.TODO("or").define();
