@@ -22,6 +22,7 @@ Valid.AddTest = function AddTest(test) {
 };
 
 Valid.ValidateQueue = function ValidateQueue(queue, value) {
+    if(!queue || queue.length < 1) return "no tests!";
     for(var i=0; i<queue.length; i++) {
        var error = queue[i].call(this, value);
         if(error) return error;
@@ -78,6 +79,7 @@ Valid.equal = function equal(wanted) {
 };
 
 Valid.typeOf = function typeOf(type) {
+    if(typeof type != 'string') return this.fail("typeOf requires a string argument, not type " + typeof type);
     return this.GetChain().AddTest(function TypeOf(value) {
         if(typeof value !== type) return "is of type " + (typeof value) + " not " + type;
     });
@@ -87,7 +89,7 @@ Valid.and = function and() {
     var chains = arguments;
     return this.GetChain().AddTest( function And(value) {
         for(var i=0; i<chains.length; i++) {
-            var error = this.ValidateQueue(chains[i]._queue);
+            var error = this.ValidateQueue(chains[i]._queue, value);
             if(error) return error;
         }
     });
@@ -106,6 +108,8 @@ Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)) }
 Valid.isUndefined   = Valid.equal(undefined).define();
 Valid.isNull        = Valid.equal(null).define();
 Valid.isBoolean     = Valid.typeOf('boolean').define();
+Valid.isTrue        = Valid.equal(true).define();
+Valid.isFalse       = Valid.equal(false).define();
 Valid.isNumber      = Valid.typeOf('number').define();
 Valid.isString      = Valid.typeOf('string').define();
 Valid.isFunction    = Valid.typeOf('function').define();

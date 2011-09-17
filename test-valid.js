@@ -9,32 +9,57 @@ Valid.assert = function assert(value, expected) {
     }
 }
 
-
-Valid.isNull().assert(null);
-Valid.isNull().assert(1, "doesn't equal null");              // "is not null" would sound better
-Valid.isNull().assert(undefined, "doesn't equal null");
+Valid.assert(null, "no tests!");
 
 Valid.isUndefined().assert(undefined);
 Valid.isUndefined().assert(1, "doesn't equal undefined");
 Valid.isUndefined().assert(null, "doesn't equal undefined");
 
+Valid.isNull().assert(null);
+Valid.isNull().assert(1, "doesn't equal null");              // "is not null" would sound better
+Valid.isNull().assert(undefined, "doesn't equal null");
+
+Valid.typeOf('undefined').assert(undefined);
+// typeof null returns 'object' on some JS implementations, use isNull()
 Valid.typeOf('number').assert(123);
-Valid.typeOf('number').assert('123', "is of type string not number");
-Valid.typeOf('number').assert(undefined, "is of type undefined not number");
-
 Valid.typeOf('string').assert('123');
-Valid.typeOf('string').assert(undefined, "is of type undefined not string");
+Valid.typeOf('garbage').assert('123', "is of type string not garbage");
+Valid.typeOf(undefined).assert(undefined, "typeOf requires a string argument, not type undefined");
+Valid.typeOf(123).assert(123, "typeOf requires a string argument, not type number");
 
+// booleans
+Valid.isBoolean().assert(true);
+Valid.isBoolean().assert(false);
+Valid.isBoolean().assert(undefined, "is of type undefined not boolean");
+Valid.isTrue().assert(true);
+Valid.isTrue().assert(false, "doesn't equal true");
+Valid.isFalse().assert(false);
+Valid.isFalse().assert(true, "doesn't equal false");
+
+// numbers
+Valid.isNumber().assert(123);
+Valid.isNumber().assert('123', "is of type string not number");
+Valid.isNumber().assert(undefined, "is of type undefined not number");
+
+// strings
+Valid.isString().assert('123');
+Valid.isString().assert(undefined, "is of type undefined not string");
+
+// regexes
 Valid.match(/^abc$/).assert('abc');
 Valid.match(/^abc$/).assert('abcd', "doesn't match /^abc$/");
 Valid.match(/^abc$/).assert(undefined, "is of type undefined not string");
 
-/*
-Valid.and(Valid.typeOf('string'),Valid.match(/^abc$/)).assert('abc');
-Valid.and(Valid.typeOf('string'),Valid.match(/^bbc$/)).assert('abc');
-Valid.and(Valid.typeOf('number'),Valid.match(/^abc$/)).assert('abc');
+// operators
+Valid.and( Valid.typeOf('string'), Valid.match(/^abc$/), Valid.match(/^a/) ).assert('abc');
+Valid.and( Valid.typeOf('string'), Valid.match(/^bbc$/) ).assert('abc', "doesn't match /^bbc$/");
+Valid.and( Valid.typeOf('number'), Valid.match(/^abc$/) ).assert('abc', "is of type string not number");
+Valid.and().test(null, "no tests!");
+Valid.and( Valid.isNull() ).test(null);
 
-// constants
+
+
+/*
 schema( true  ).validate( true  ).result();
 schema( false ).validate( false ).result();
 schema( true  ).validate( false ).result("false is not true");
@@ -53,9 +78,6 @@ schema( {abc: 123, def: 456} ).validate( {abc: 123}           ).result("[object 
 schema( {abc: 123}           ).validate( {abc: 123, def: 456} ).result("[object Object] has def but template doesn't");
 
 schema( {a: {b: {c: 1}}}     ).validate( {a: {b: {c: 2}}}     ).result("a,b,c: 2 does not equal 1 for [object Object]");  // TODO: improve error message
-
-schema( function (val) { if(val != 123) this.error("nope!"); } ).validate(123).result();
-schema( function (val) { if(val == 123) this.error("is equal"); } ).validate(123).result("123 is equal");
 
 // compare functions
 schema( Validator.IsAnything    ).validate(123).result();
