@@ -49,6 +49,18 @@ Valid.verify = function assert(value) {
     if(message) throw value + " " + message;
 }
 
+// It's really shameful that this function needs to exist.
+// In an ideal world you could just do this:  Valid.isNull() = Valid.equal(null);
+// In this world, that only works if you don't call it:   Valid.isNull.verify(1)
+// Since Valid.equal(null) returns the chain object, if you call isNull:
+//   Valid.isNull().verify(1)   complains "Property isNull is not a function"
+// For this to work, JS needs to a callable object with a prototype chain.
+// And, without using nonstandard __proto__, I don't see how to make that happen.
+Valid.define = function define() {
+    var that = this;
+    return function() { return that; };
+}
+
 
 // core tests
 
@@ -81,25 +93,28 @@ Valid.and = function and() {
     });
 };
 
-// Valid.or
-// Valid.not
+Valid.TODO = function(name) {
+    return Valid.fail((name ? name : "this") + " is still todo")
+};
 
-Valid.todo = Valid.fail(" is still todo");
+Valid.or = Valid.TODO("or").define();
+Valid.not = Valid.TODO;
 
-//Valid.notEqual = Valid.not(Valid.equal);
+Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)) }
+
 // Some JS implementations think typeof null === 'object'
-Valid.isUndefined   = Valid.equal(undefined);
-Valid.isNull        = Valid.equal(null);
-Valid.isBoolean     = Valid.typeOf('boolean');
-Valid.isNumber      = Valid.typeOf('number');
-Valid.isString      = Valid.typeOf('string');
-Valid.isFunction    = Valid.typeOf('function');
-Valid.isObject      = Valid.typeOf('object');
+Valid.isUndefined   = Valid.equal(undefined).define();
+Valid.isNull        = Valid.equal(null).define();
+Valid.isBoolean     = Valid.typeOf('boolean').define();
+Valid.isNumber      = Valid.typeOf('number').define();
+Valid.isString      = Valid.typeOf('string').define();
+Valid.isFunction    = Valid.typeOf('function').define();
+Valid.isObject      = Valid.typeOf('object').define();
 
 Valid.match = function match(pattern, modifiers) {
     if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
-    return this.GetChain().AddTest( function Match(value) {
-        if(!value.match(pattern)) return "doesn't match " + pattern;
+    return this.isString().AddTest( function Match(value) {
+        if(!value || !value.match(pattern)) return "doesn't match " + pattern;
     });
 };
 

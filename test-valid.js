@@ -1,74 +1,40 @@
 var Valid = require('./valid');
 
-var isString = Valid.typeOf('string').throwErrors();
-isString.validate('abc');
+// Like check() but throws if the result doesn't match the expectation
+Valid.assert = function assert(value, expected) {
+    var actual = this.test(value);
+    if(expected !== actual) {
+        var str = (expected === undefined ? "success" : "'" + expected + "'");
+        throw value + ": expected " + str + " but got '" + actual + "'";
+    }
+}
 
-Valid.match(/^abc$/).validate('abc');
 
+Valid.isNull().assert(null);
+Valid.isNull().assert(1, "doesn't equal null");              // "is not null" would sound better
+Valid.isNull().assert(undefined, "doesn't equal null");
 
-Valid.fail = function(message) {
-    return this.CreateSimpleTest(message, function Fail(value) { return false; });
-};
+Valid.isUndefined().assert(undefined);
+Valid.isUndefined().assert(1, "doesn't equal undefined");
+Valid.isUndefined().assert(null, "doesn't equal undefined");
 
-// Valid.fail('hi').validate(12);
+Valid.typeOf('number').assert(123);
+Valid.typeOf('number').assert('123', "is of type string not number");
+Valid.typeOf('number').assert(undefined, "is of type undefined not number");
 
-Valid.throwErrors().equal(1).validate(1);
+Valid.typeOf('string').assert('123');
+Valid.typeOf('string').assert(undefined, "is of type undefined not string");
 
-Valid.and(Valid.typeOf('string'),Valid.match(/^abc$/)).validate('abc');
+Valid.match(/^abc$/).assert('abc');
+Valid.match(/^abc$/).assert('abcd', "doesn't match /^abc$/");
+Valid.match(/^abc$/).assert(undefined, "is of type undefined not string");
 
 /*
-
-// Modifies the Validator to ensure expected errors are caught
-var Checker = function(template, error) {
-  Validator.call(this, template, error);
-  this.error_strings = [];
-}
-Checker.prototype.constructor = Checker;    // is this necessary?
-Checker.prototype = new Validator();
-
-Checker.prototype.error = function(msg) {
-  this.error_strings.push(this.error_str(msg));
-}
-
-Checker.prototype.result = function(expected) {
-  if(expected === undefined) expected = [];
-  if(typeof expected == 'string') expected = [expected];
-  var actual = this.error_strings;
-
-  if(expected.length == 0 && actual.length > 0) {
-    throw "expected no error but got [" + actual + "]";
-  } else if(expected.length > 0 && actual.length == 0) {
-    throw "expected [" + expected + "] but got nothing.";
-  } else if(expected.length != actual.length) {
-    throw "expected " + expected.length + " [" + expected +
-      "] but got " + actual.length + " [" + actual + "]";
-  } else {
-    for(var i=0; i<expected.length; i++) {
-      if(expected[i] !== actual[i]) {
-        throw "expected [" + expected + "] but got [" + actual[i] + "] (they differ at " + i + ")";
-      }
-    }
-    // expected and actual are identical
-  }
-}
-
-
-Checker.create = function(template) {
-  return new this(template);
-};
-
-
-function schema(tmpl) { return Checker.create(tmpl); }
+Valid.and(Valid.typeOf('string'),Valid.match(/^abc$/)).assert('abc');
+Valid.and(Valid.typeOf('string'),Valid.match(/^bbc$/)).assert('abc');
+Valid.and(Valid.typeOf('number'),Valid.match(/^abc$/)).assert('abc');
 
 // constants
-schema( null      ).validate( null      ).result();   // same as Validator.create(null).validate(null)
-schema( null      ).validate( 1         ).result("1 is not null");
-schema( null      ).validate( undefined ).result("undefined is not null");
-
-schema( undefined ).validate( undefined ).result();
-schema( undefined ).validate( 1         ).result("1 is not undefined");
-schema( undefined ).validate( null      ).result("null is not undefined");
-
 schema( true  ).validate( true  ).result();
 schema( false ).validate( false ).result();
 schema( true  ).validate( false ).result("false is not true");
