@@ -16,12 +16,13 @@ Valid.GetChain = function GetChain() {
 };
 
 Valid.AddTest = function AddTest(test, data) {
-    if(this._queue === undefined) this._queue = [];
+    var self = this.GetChain();
+    if(self._queue === undefined) self._queue = [];
     // data is optional but, if supplied, it gets added to the function object
     // this helps investigate deep test chains when debugging
     if(data) test.data = data;
-    this._queue.push(test);
-    return this;
+    self._queue.push(test);
+    return self;
 };
 
 Valid.ValidateQueue = function ValidateQueue(queue, value) {
@@ -55,11 +56,11 @@ Valid.verify = function assert(value) {
 
 // It's really shameful that this function needs to exist.
 // In an ideal world you could just do this:  Valid.isNull() = Valid.equal(null);
-// In this world, that only works if you don't call it:   Valid.isNull.verify(1)
+// In our world, that only works if you don't call it: Valid.isNull.verify(1);  Ugh.
 // Since Valid.equal(null) returns the chain object, if you call isNull:
-//   Valid.isNull().verify(1)   complains "Property isNull is not a function"
+//   Valid.isNull().verify(1) JS complains "Property isNull is not a function"
 // For this to work, JS needs to a callable object with a prototype chain.
-// And, without using nonstandard __proto__, I don't see how to make that happen.
+// And, without using nonstandard __proto__, I don't think that's possible...?
 Valid.define = function define() {
     var queue = this._queue;
     return function() {
@@ -74,34 +75,30 @@ Valid.define = function define() {
 
 // core tests
 
-Valid.nop = function() { return this.GetChain().AddTest(function Nop(value) {}); };
-
+Valid.nop = function() { return this.AddTest(function Nop(value) {}); };
+ 
 Valid.fail = function fail(message) {
-    return this.GetChain().AddTest( function Fail(value) {
+    return this.AddTest( function Fail(value) {
         return message || "failed";
     });
 };
 
-Valid.todo = function(name) {
-    return this.fail((name ? name : "this") + " is still todo");
-};
-
 Valid.equal = function equal(wanted) {
-    return this.GetChain().AddTest( function Equal(value) {
+    return this.AddTest( function Equal(value) {
         if(value !== wanted) return "doesn't equal " + wanted;
     });
 };
 
 Valid.mod = function mod(by, remainder) {
     if(!remainder) remainder = 0;
-    return this.GetChain().AddTest( function Mod(value) {
+    return this.AddTest( function Mod(value) {
         if(value % by !== remainder) return "mod " + by + " has " + (value % by) + " remainder instead of " + remainder;
     });
 };
 
 Valid.typeOf = function typeOf(type) {
     if(typeof type != 'string') return this.fail("typeOf requires a string argument, not type " + typeof type);
-    return this.GetChain().AddTest(function TypeOf(value) {
+    return this.AddTest(function TypeOf(value) {
         if(typeof value !== type) return "is of type " + (typeof value) + " not " + type;
     });
 };
@@ -109,7 +106,7 @@ Valid.typeOf = function typeOf(type) {
 // seems somewhat useless since V.a().b() is the same as V.and(V.a(),V.b())
 Valid.and = function and() {
     var chains = arguments;
-    return this.GetChain().AddTest( function And(value) {
+    return this.AddTest( function And(value) {
         for(var i=0; i<chains.length; i++) {
             var error = this.ValidateQueue(chains[i]._queue, value);
             if(error) return error;
@@ -119,7 +116,7 @@ Valid.and = function and() {
 
 Valid.or = function or() {
     var chains = arguments;
-    return this.GetChain().AddTest(function Or(value) {
+    return this.AddTest(function Or(value) {
         var errors = [];
         for(var i=0; i<chains.length; i++) {
             var error = this.ValidateQueue(chains[i]._queue, value);
@@ -130,10 +127,8 @@ Valid.or = function or() {
     }, chains);
 };
 
-Valid.not = Valid.todo;
-
 Valid.messageFor = function messageFor(test, message) {
-    return this.GetChain().AddTest( function ErrorMessage(value) {
+    return this.AddTest( function ErrorMessage(value) {
         var error = this.ValidateQueue(test._queue, value);
         if(error) return message;
     });
@@ -148,6 +143,12 @@ Valid.match = function match(pattern, modifiers) {
 
 
 // composite tests
+
+Valid.todo = function(name) {
+    return this.fail((name ? name : "this") + " is still todo");
+};
+
+Valid.not = Valid.todo;
 
 Valid.isUndefined   = Valid.equal(undefined).define();
 //Valid.isDefined     = Valid.not(Valid.isUndefined()).define();
