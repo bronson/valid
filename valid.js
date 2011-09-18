@@ -132,7 +132,7 @@ Valid.or = function or() {
 
 Valid.not = Valid.TODO;
 
-Valid.optional = Valid.TODO;
+Valid.optional = function(test) { return Valid.or( Valid.errorMessage(Valid.isUndefined(),"is mandatory"), test); };
 
 Valid.errorMessage = function errorMessage(test, message) {
     return this.GetChain().AddTest( function ErrorMessage(value) {

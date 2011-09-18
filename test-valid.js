@@ -90,10 +90,11 @@ schema( Validator.IsNumber      ).validate(123).result();
 schema( Validator.IsNotBlank    ).validate('0').result();
 schema( Validator.IsNotBlank    ).validate(' a').result("' a' has leading whitespace");
 schema( Validator.IsNotBlank    ).validate('').result("'' can't be blank");
-
-schema( Validator.IsOptional(Validator.IsInteger) ).validate(undefined).result();
-schema( Validator.IsOptional(Validator.IsInteger) ).validate(12).result();
 */
+
+Valid.optional(Valid.isInteger()).assert(undefined);
+Valid.optional(Valid.isInteger()).assert(12);
+Valid.optional(Valid.isInteger()).assert("12", "is mandatory and is of type string not number");
 
 /*
 schema( true  ).validate( true  ).result();
