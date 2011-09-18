@@ -74,7 +74,8 @@ Valid.define = function define() {
 
 // core tests
 
-// always fails validation
+Valid.nop = function() { return this.GetChain().AddTest(function Nop(value) {}); };
+
 Valid.fail = function fail(message) {
     return this.GetChain().AddTest( function Fail(value) {
         return message || "failed";
@@ -88,6 +89,13 @@ Valid.TODO = function(name) {
 Valid.equal = function equal(wanted) {
     return this.GetChain().AddTest( function Equal(value) {
         if(value !== wanted) return "doesn't equal " + wanted;
+    });
+};
+
+Valid.mod = function mod(by, remainder) {
+    if(!remainder) remainder = 0;
+    return this.GetChain().AddTest( function Mod(value) {
+        if(value % by !== remainder) return "mod " + by + " has " + (value % by) + " remainder instead of " + remainder;
     });
 };
 
@@ -126,16 +134,28 @@ Valid.not = Valid.TODO;
 
 Valid.optional = Valid.TODO;
 
+Valid.errorMessage = function errorMessage(test, message) {
+    return this.GetChain().AddTest( function ErrorMessage(value) {
+        var error = this.ValidateQueue(test._queue, value);
+        if(error) return message;
+    });
+};
+
+
 // composite tests
-Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)) }
-// Some JS implementations think typeof null === 'object'
+Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)); };
 Valid.isUndefined   = Valid.equal(undefined).define();
+//Valid.isDefined     = Valid.not(Valid.isUndefined()).define();
 Valid.isNull        = Valid.equal(null).define();
+//Valid.nonNull       = Valid.not(Valid.isNull()).define();
+//Valid.exists        = Valid.isDefined().nonNull().define();
 Valid.isBoolean     = Valid.typeOf('boolean').define();
 Valid.isTrue        = Valid.equal(true).define();
 Valid.isFalse       = Valid.equal(false).define();
 Valid.isNumber      = Valid.typeOf('number').define();
+Valid.isInteger     = Valid.isNumber().errorMessage(Valid.mod(1), "is not an integer").define();
 Valid.isString      = Valid.typeOf('string').define();
+//Valid.nonBlank      = Valid.not(Valid.match(/^\s*$/)).define();
 Valid.isFunction    = Valid.typeOf('function').define();
 Valid.isObject      = Valid.typeOf('object').define();
 

@@ -43,6 +43,9 @@ Valid.isFalse().assert(true, "doesn't equal false");
 Valid.isNumber().assert(123);
 Valid.isNumber().assert('123', "is of type string not number");
 Valid.isNumber().assert(undefined, "is of type undefined not number");
+Valid.isInteger().assert(123.0);
+Valid.isInteger().assert('123.0', "is of type string not number");
+Valid.isInteger().assert(123.1, "is not an integer");
 
 // strings
 Valid.isString().assert('123');
@@ -78,6 +81,21 @@ nullOrString.assert('123');
 nullOrString.assert(123, "doesn't equal null and is of type number not string");
 
 /*
+schema( Validator.IsAnything    ).validate(123).result();
+schema( Validator.IsAnything    ).validate(undefined).result();
+schema( Validator.IsDefined     ).validate(123).result();
+schema( Validator.IsDefined     ).validate(null).result("null is not defined");
+schema( Validator.IsDefined     ).validate(undefined).result("undefined is not defined");
+schema( Validator.IsNumber      ).validate(123).result();
+schema( Validator.IsNotBlank    ).validate('0').result();
+schema( Validator.IsNotBlank    ).validate(' a').result("' a' has leading whitespace");
+schema( Validator.IsNotBlank    ).validate('').result("'' can't be blank");
+
+schema( Validator.IsOptional(Validator.IsInteger) ).validate(undefined).result();
+schema( Validator.IsOptional(Validator.IsInteger) ).validate(12).result();
+*/
+
+/*
 schema( true  ).validate( true  ).result();
 schema( false ).validate( false ).result();
 schema( true  ).validate( false ).result("false is not true");
@@ -96,22 +114,6 @@ schema( {abc: 123, def: 456} ).validate( {abc: 123}           ).result("[object 
 schema( {abc: 123}           ).validate( {abc: 123, def: 456} ).result("[object Object] has def but template doesn't");
 
 schema( {a: {b: {c: 1}}}     ).validate( {a: {b: {c: 2}}}     ).result("a,b,c: 2 does not equal 1 for [object Object]");  // TODO: improve error message
-
-// compare functions
-schema( Validator.IsAnything    ).validate(123).result();
-schema( Validator.IsAnything    ).validate(undefined).result();
-schema( Validator.IsDefined     ).validate(123).result();
-schema( Validator.IsDefined     ).validate(null).result("null is not defined");
-schema( Validator.IsDefined     ).validate(undefined).result("undefined is not defined");
-schema( Validator.IsNumber      ).validate(123).result();
-schema( Validator.IsInteger     ).validate(123.0).result();
-schema( Validator.IsInteger     ).validate(123.1).result("123.1 is not an integer");
-schema( Validator.IsNotBlank    ).validate('0').result();
-schema( Validator.IsNotBlank    ).validate(' a').result("' a' has leading whitespace");
-schema( Validator.IsNotBlank    ).validate('').result("'' can't be blank");
-
-schema( Validator.IsOptional(Validator.IsInteger) ).validate(undefined).result();
-schema( Validator.IsOptional(Validator.IsInteger) ).validate(12).result();
 
 // arrays
 schema( [12, 13] ).validate( [12, 13] ).result();
