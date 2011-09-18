@@ -8,7 +8,7 @@ Valid.assert = function assert(value, expected) {
         var acstr = (actual === undefined ? "success" : "'" + actual + "'");
         throw value + ": expected " + exstr + " but got " + acstr;
     }
-}
+};
 
 Valid.assert("any value", "no tests!");
 

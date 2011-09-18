@@ -82,7 +82,7 @@ Valid.fail = function fail(message) {
     });
 };
 
-Valid.TODO = function(name) {
+Valid.todo = function(name) {
     return this.fail((name ? name : "this") + " is still todo");
 };
 
@@ -106,7 +106,7 @@ Valid.typeOf = function typeOf(type) {
     });
 };
 
-// seems somewhat useless since V.and(V.a(),V.b()) is the same as V.a().b()
+// seems somewhat useless since V.a().b() is the same as V.and(V.a(),V.b())
 Valid.and = function and() {
     var chains = arguments;
     return this.GetChain().AddTest( function And(value) {
@@ -123,27 +123,32 @@ Valid.or = function or() {
         var errors = [];
         for(var i=0; i<chains.length; i++) {
             var error = this.ValidateQueue(chains[i]._queue, value);
-            if(!error) return;
+            if(!error) return;   // short circuit
             errors.push(error);
         }
         return errors.length > 0 ? errors.join(" and ") : undefined;
     }, chains);
 };
 
-Valid.not = Valid.TODO;
+Valid.not = Valid.todo;
 
-Valid.optional = function(test) { return Valid.or( Valid.errorMessage(Valid.isUndefined(),"is mandatory"), test); };
-
-Valid.errorMessage = function errorMessage(test, message) {
+Valid.messageFor = function messageFor(test, message) {
     return this.GetChain().AddTest( function ErrorMessage(value) {
         var error = this.ValidateQueue(test._queue, value);
         if(error) return message;
     });
 };
 
+Valid.match = function match(pattern, modifiers) {
+    if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
+    return this.isString().AddTest( function Match(value) {
+        if(!value || !value.match(pattern)) return "doesn't match " + pattern;
+    });
+};
+
 
 // composite tests
-Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)); };
+
 Valid.isUndefined   = Valid.equal(undefined).define();
 //Valid.isDefined     = Valid.not(Valid.isUndefined()).define();
 Valid.isNull        = Valid.equal(null).define();
@@ -153,16 +158,12 @@ Valid.isBoolean     = Valid.typeOf('boolean').define();
 Valid.isTrue        = Valid.equal(true).define();
 Valid.isFalse       = Valid.equal(false).define();
 Valid.isNumber      = Valid.typeOf('number').define();
-Valid.isInteger     = Valid.isNumber().errorMessage(Valid.mod(1), "is not an integer").define();
+Valid.isInteger     = Valid.isNumber().messageFor(Valid.mod(1), "is not an integer").define();
 Valid.isString      = Valid.typeOf('string').define();
 //Valid.nonBlank      = Valid.not(Valid.match(/^\s*$/)).define();
 Valid.isFunction    = Valid.typeOf('function').define();
 Valid.isObject      = Valid.typeOf('object').define();
 
-Valid.match = function match(pattern, modifiers) {
-    if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
-    return this.isString().AddTest( function Match(value) {
-        if(!value || !value.match(pattern)) return "doesn't match " + pattern;
-    });
-};
+Valid.optional = function(test) { return Valid.or( Valid.messageFor(Valid.isUndefined(),"is mandatory"), test); };
+Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)); };
 
