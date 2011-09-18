@@ -45,13 +45,13 @@ Valid.test = function test(value) {
 // returns true if valid, false if invalid
 Valid.check = function check(value) {
     return !this.test(value);
-}
+};
 
 // raises an error if invalid
 Valid.verify = function assert(value) {
     var message = this.test(value);
     if(message) throw value + " " + message;
-}
+};
 
 // It's really shameful that this function needs to exist.
 // In an ideal world you could just do this:  Valid.isNull() = Valid.equal(null);
@@ -69,7 +69,7 @@ Valid.define = function define() {
         }
         return self;
     };
-}
+};
 
 
 // core tests
@@ -82,7 +82,7 @@ Valid.fail = function fail(message) {
 };
 
 Valid.TODO = function(name) {
-    return this.fail((name ? name : "this") + " is still todo")
+    return this.fail((name ? name : "this") + " is still todo");
 };
 
 Valid.equal = function equal(wanted) {

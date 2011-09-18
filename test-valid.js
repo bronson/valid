@@ -10,7 +10,7 @@ Valid.assert = function assert(value, expected) {
     }
 }
 
-Valid.assert(null, "no tests!");
+Valid.assert("any value", "no tests!");
 
 Valid.isUndefined().assert(undefined);
 Valid.isUndefined().assert(1, "doesn't equal undefined");
