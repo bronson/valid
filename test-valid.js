@@ -13,14 +13,32 @@ Valid.assert = function assert(value, expected) {
 Valid.assert("any value", "no tests!");
 
 Valid.isUndefined().assert(undefined);
-Valid.isUndefined().assert(1, "doesn't equal undefined");
-Valid.isUndefined().assert(null, "doesn't equal undefined");
+Valid.isUndefined().assert(1, "is not equal to undefined");
+Valid.isUndefined().assert(null, "is not equal to undefined");
+Valid.defined().assert(undefined, "is undefined");
+Valid.defined().assert(1);
+Valid.defined().assert(null);
 
 Valid.isNull().assert(null);
-Valid.isNull().assert(1, "doesn't equal null");              // "is not null" would sound better
-Valid.isNull().assert(undefined, "doesn't equal null");
+Valid.isNull().assert(1, "is not equal to null");              // "is not null" would sound better
+Valid.isNull().assert(undefined, "is not equal to null");
+Valid.notNull().assert(null, "is null");
+Valid.notNull().assert(1);
+Valid.notNull().assert(undefined);
 
-Valid.equal(3).assert(Valid.isUndefined().isNull().isNumber()._queue.length ); // closure leak meant only one test would be queued, not all three
+Valid.exists().assert(0);
+Valid.exists().assert(false);
+Valid.exists().assert(null, "does not exist");
+Valid.exists().assert(undefined, "does not exist");
+
+
+// closure leak meant only one test would be queued, not all three
+Valid.equal(null).assert(null);
+Valid.equal(null).assert(undefined, "is not equal to null");
+Valid.equal(3).assert(Valid.isUndefined().isNull().isNumber()._queue.length );
+Valid.notEqual(null).assert(undefined);
+Valid.notEqual(null).assert(null, "is equal to null");
+
 
 Valid.typeOf('undefined').assert(undefined);
 // typeof null returns 'object' on some JS implementations, use isNull()
@@ -35,9 +53,9 @@ Valid.isBoolean().assert(true);
 Valid.isBoolean().assert(false);
 Valid.isBoolean().assert(undefined, "is of type undefined not boolean");
 Valid.isTrue().assert(true);
-Valid.isTrue().assert(false, "doesn't equal true");
+Valid.isTrue().assert(false, "is not equal to true");
 Valid.isFalse().assert(false);
-Valid.isFalse().assert(true, "doesn't equal false");
+Valid.isFalse().assert(true, "is not equal to false");
 
 // numbers
 Valid.isNumber().assert(123);
@@ -48,37 +66,40 @@ Valid.isInteger().assert('123.0', "is of type string not number");
 Valid.isInteger().assert(123.1, "is not an integer");
 
 // strings
-Valid.isString().assert('123');
+Valid.isString().assert(' 123');
 Valid.isString().assert(undefined, "is of type undefined not string");
+Valid.blank().assert(' \n\t  ');
+Valid.blank().assert('');
+Valid.blank().assert(null);
 
 // regexes
+Valid.match(/^.*$/).assert('');
 Valid.match(/^abc$/).assert('abc');
-Valid.match(/^abc$/).assert('abcd', "doesn't match /^abc$/");
+Valid.match(/^abc$/).assert('abcd', "does not match /^abc$/");
 Valid.match(/^abc$/).assert(undefined, "is of type undefined not string");
+Valid.match(/1/).assert(1, "is of type number not string");
 Valid.equal(2).assert( Valid.match(/^abc$/)._queue.length ); // closure leak meant all matches were appended to the same Chain
-  // todo: Valid.assert(Valid.match(/^abc$/)._queue.length).equal(2) ?
-  // todo: Valid.value(Valid.match(/^abc$/)._queue.length).equal(2).assert()
 
 Valid.and().assert(null);                         // passing 0 tests succeeds unconditionally
 Valid.and( Valid.isNull() ).assert(null);                            // passing 1 arg success
-Valid.and( Valid.isNull() ).assert(undefined, "doesn't equal null"); // passing 1 arg failure
+Valid.and( Valid.isNull() ).assert(undefined, "is not equal to null"); // passing 1 arg failure
 Valid.and( Valid.typeOf('string'), Valid.match(/c$/), Valid.match(/^a/) ).assert('abc');
-Valid.and( Valid.typeOf('string'), Valid.match(/^bbc$/) ).assert('abc', "doesn't match /^bbc$/");
+Valid.and( Valid.typeOf('string'), Valid.match(/^bbc$/) ).assert('abc', "does not match /^bbc$/");
 Valid.and( Valid.typeOf('number'), Valid.match(/^abc$/) ).assert('abc', "is of type string not number");
 
 Valid.or().assert(undefined);                     // passing 0 tests succeeds unconditionally
 Valid.or( Valid.isNull() ).assert(null);                            // passing 1 arg success
-Valid.or( Valid.isNull() ).assert(undefined, "doesn't equal null"); // passing 1 arg failure
+Valid.or( Valid.isNull() ).assert(undefined, "is not equal to null"); // passing 1 arg failure
 Valid.or( Valid.isNull(), Valid.isUndefined() ).assert(undefined);
 Valid.or( Valid.isNull(), Valid.isUndefined() ).assert(null);
 Valid.or( Valid.isNull(), Valid.isNumber(), Valid.isString() ).assert('mosdef');
 Valid.or( Valid.isUndefined(), Valid.match(/^abc$/), Valid.match(/def$/) ).assert('mosdef');
-Valid.or( Valid.typeOf('number'), Valid.match(/^bbc$/) ).assert('abc', "is of type string not number and doesn't match /^bbc$/");
+Valid.or( Valid.typeOf('number'), Valid.match(/^bbc$/) ).assert('abc', "is of type string not number and does not match /^bbc$/");
 
 var nullOrString = Valid.or(Valid.isNull(), Valid.isString());
 nullOrString.assert(null);
 nullOrString.assert('123');
-nullOrString.assert(123, "doesn't equal null and is of type number not string");
+nullOrString.assert(123, "is not equal to null and is of type number not string");
 
 /*
 schema( Validator.IsAnything    ).validate(123).result();
@@ -108,11 +129,11 @@ schema( 'abc'   ).validate( 'abc ' ).result("'abc ' does not equal 'abc'");
 schema( 123     ).validate( 123    ).result();
 schema( 123     ).validate( 123.1  ).result("123.1 does not equal 123");
 schema( /^abc$/ ).validate( 'abc'  ).result();
-schema( /^abc$/ ).validate( 'abcd' ).result("'abcd' doesn't match /^abc$/");
+schema( /^abc$/ ).validate( 'abcd' ).result("'abcd' does not match /^abc$/");
 
 schema( {abc: 123}           ).validate( {abc: 123}           ).result();
 schema( {abc: 123, def: 456} ).validate( {abc: 123}           ).result("[object Object] is missing def");
-schema( {abc: 123}           ).validate( {abc: 123, def: 456} ).result("[object Object] has def but template doesn't");
+schema( {abc: 123}           ).validate( {abc: 123, def: 456} ).result("[object Object] has def but template does not");
 
 schema( {a: {b: {c: 1}}}     ).validate( {a: {b: {c: 2}}}     ).result("a,b,c: 2 does not equal 1 for [object Object]");  // TODO: improve error message
 
