@@ -1,6 +1,8 @@
 // valid.js Scott Bronson 2011
 // This file defines the Valid object and some core validation tests.
 
+// todo? type instead of typeOf   boolean instead of isBoolean
+
 var Valid = function Valid() { };
 module.exports = Valid;
 
@@ -15,14 +17,28 @@ Valid.GetChain = function GetChain() {
     return this;
 };
 
+// Adds the given test to the current Chain.
+// If data is supplied, it's added to the passed-in test to help introspect when debugging.
 Valid.AddTest = function AddTest(test, data) {
     var self = this.GetChain();
     if(self._queue === undefined) self._queue = [];
-    // data is optional but, if supplied, it gets added to the function object
-    // this helps investigate deep test chains when debugging
     if(data) test.data = data;
     self._queue.push(test);
     return self;
+};
+
+// Supply a function that that returns undefined on success or an error message on failure, produces a full, chainable test.
+// The first arg passed to your your function is the value to test, the rest are the args passed when adding the test.
+// i.e. Valid.t = SimpleTest(fn(){...}); Valid.t(4,2).check(9) would call your function with arguments 9, 4, 2.
+Valid.SimpleTest = function SimpleTest(fn) {
+    return function() {
+        arguments = Array.prototype.slice.call(arguments, 0);
+        return (function (args) { // create a closure so args won't be reused
+            return this.AddTest( function SimpleTest(value) {
+                return fn.apply(this, [value].concat(args));
+            }, args);
+        }).call(this, arguments);
+    };
 };
 
 Valid.ValidateQueue = function ValidateQueue(queue, value) {
@@ -75,33 +91,21 @@ Valid.define = function define() {
 
 // core tests
 
-Valid.nop = function() { return this.AddTest(function Nop(value) {}); };
- 
-Valid.fail = function fail(message) {
-    return this.AddTest( function Fail(value) {
-        return message || "failed";
-    });
-};
+Valid.nop   = Valid.SimpleTest(function Nop(val)        { });
+Valid.fail  = Valid.SimpleTest(function Fail(val,msg)   {                         return msg || "failed"; });
+Valid.equal = Valid.SimpleTest(function Equal(val,want) { if(val !== want)        return "doesn't equal "+want });
+Valid.mod   = Valid.SimpleTest(function mod(val,by,rem) { if(val%by !== (rem||0)) return "mod "+by+" is "+(val%by)+" not "+rem });
 
-Valid.equal = function equal(wanted) {
-    return this.AddTest( function Equal(value) {
-        if(value !== wanted) return "doesn't equal " + wanted;
-    });
-};
+Valid.typeOf= Valid.SimpleTest(function Type(val,type)  {
+    if(typeof type !== 'string') return "typeOf requires a string argument, not "+(typeof type);
+    if(typeof val !== type)      return "is of type " + (typeof val) + " not " + type
+});
 
-Valid.mod = function mod(by, remainder) {
-    if(!remainder) remainder = 0;
-    return this.AddTest( function Mod(value) {
-        if(value % by !== remainder) return "mod " + by + " has " + (value % by) + " remainder instead of " + remainder;
-    });
-};
+Valid.messageFor = Valid.SimpleTest(function Msg(value, test, message) {
+    var error = this.ValidateQueue(test._queue, value);
+    if(error) return message;
+});
 
-Valid.typeOf = function typeOf(type) {
-    if(typeof type != 'string') return this.fail("typeOf requires a string argument, not type " + typeof type);
-    return this.AddTest(function TypeOf(value) {
-        if(typeof value !== type) return "is of type " + (typeof value) + " not " + type;
-    });
-};
 
 // seems somewhat useless since V.a().b() is the same as V.and(V.a(),V.b())
 Valid.and = function and() {
@@ -125,13 +129,6 @@ Valid.or = function or() {
         }
         return errors.length > 0 ? errors.join(" and ") : undefined;
     }, chains);
-};
-
-Valid.messageFor = function messageFor(test, message) {
-    return this.AddTest( function ErrorMessage(value) {
-        var error = this.ValidateQueue(test._queue, value);
-        if(error) return message;
-    });
 };
 
 Valid.match = function match(pattern, modifiers) {
@@ -165,6 +162,6 @@ Valid.isString      = Valid.typeOf('string').define();
 Valid.isFunction    = Valid.typeOf('function').define();
 Valid.isObject      = Valid.typeOf('object').define();
 
-Valid.optional = function(test) { return Valid.or( Valid.messageFor(Valid.isUndefined(),"is mandatory"), test); };
+Valid.optional = function(test) { return Valid.or( Valid.messageFor(Valid.isUndefined(),"is optional"), test); };
 Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg)); };
 

@@ -27,8 +27,8 @@ Valid.typeOf('undefined').assert(undefined);
 Valid.typeOf('number').assert(123);
 Valid.typeOf('string').assert('123');
 Valid.typeOf('garbage').assert('123', "is of type string not garbage");
-Valid.typeOf(undefined).assert(undefined, "typeOf requires a string argument, not type undefined");
-Valid.typeOf(123).assert(123, "typeOf requires a string argument, not type number");
+Valid.typeOf(undefined).assert(undefined, "typeOf requires a string argument, not undefined");
+Valid.typeOf(123).assert(123, "typeOf requires a string argument, not number");
 
 // booleans
 Valid.isBoolean().assert(true);
@@ -94,7 +94,7 @@ schema( Validator.IsNotBlank    ).validate('').result("'' can't be blank");
 
 Valid.optional(Valid.isInteger()).assert(undefined);
 Valid.optional(Valid.isInteger()).assert(12);
-Valid.optional(Valid.isInteger()).assert("12", "is mandatory and is of type string not number");
+Valid.optional(Valid.isInteger()).assert("12", "is optional and is of type string not number");
 
 /*
 schema( true  ).validate( true  ).result();
