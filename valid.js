@@ -32,12 +32,10 @@ Valid.AddTest = function AddTest(test, data) {
 // i.e. Valid.t = SimpleTest(fn(){...}); Valid.t(4,2).check(9) would call your function with arguments 9, 4, 2.
 Valid.SimpleTest = function SimpleTest(fn) {
     return function() {
-        arguments = Array.prototype.slice.call(arguments, 0);
-        return (function (args) { // create a closure so args won't be reused
-            return this.AddTest( function SimpleTest(value) {
-                return fn.apply(this, [value].concat(args));
-            }, args);
-        }).call(this, arguments);
+        var args = Array.prototype.slice.call(arguments, 0);
+        return this.AddTest( function SimpleTest(value) {
+            return fn.apply(this, [value].concat(args));
+        }, args);
     };
 };
 
@@ -80,7 +78,7 @@ Valid.verify = function assert(value) {
 Valid.define = function define() {
     var queue = this._queue;
     return function() {
-        self = this.GetChain();
+        var self = this.GetChain();
         for(i=0; i<queue.length; i++) {
             self.AddTest(queue[i]);
         }
@@ -93,12 +91,12 @@ Valid.define = function define() {
 
 Valid.nop   = Valid.SimpleTest(function Nop(val)        { });
 Valid.fail  = Valid.SimpleTest(function Fail(val,msg)   {                         return msg || "failed"; });
-Valid.equal = Valid.SimpleTest(function Equal(val,want) { if(val !== want)        return "doesn't equal "+want });
-Valid.mod   = Valid.SimpleTest(function mod(val,by,rem) { if(val%by !== (rem||0)) return "mod "+by+" is "+(val%by)+" not "+rem });
+Valid.equal = Valid.SimpleTest(function Equal(val,want) { if(val !== want)        return "doesn't equal "+want; });
+Valid.mod   = Valid.SimpleTest(function mod(val,by,rem) { if(val%by !== (rem||0)) return "mod "+by+" is "+(val%by)+" not "+rem; });
 
 Valid.typeOf= Valid.SimpleTest(function Type(val,type)  {
     if(typeof type !== 'string') return "typeOf requires a string argument, not "+(typeof type);
-    if(typeof val !== type)      return "is of type " + (typeof val) + " not " + type
+    if(typeof val !== type)      return "is of type " + (typeof val) + " not " + type;
 });
 
 Valid.messageFor = Valid.SimpleTest(function Msg(value, test, message) {
