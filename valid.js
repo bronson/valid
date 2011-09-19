@@ -79,7 +79,7 @@ Valid.define = function define() {
     var queue = this._queue;
     return function() {
         var self = this.GetChain();
-        for(i=0; i<queue.length; i++) {
+        for(var i=0; i<queue.length; i++) {
             self.AddTest(queue[i]);
         }
         return self;
