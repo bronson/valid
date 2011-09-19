@@ -1,7 +1,6 @@
 // valid.js Scott Bronson 2011
 // This file defines the Valid object and some core validation tests.
 
-// todo? type instead of typeOf   boolean instead of isBoolean
 // todo? is it possible to turn test objects into arrays?
 
 var Valid = function Valid() { };
@@ -74,10 +73,10 @@ Valid.verify = function assert(value) {
 // then you forgot to call define().
 //
 // It's really shameful that this function needs to exist.
-// In an ideal world you could just do this:  Valid.isNull() = Valid.equal(null);
-// In our world, that only works if you don't call it: Valid.isNull.verify(1);  Ugh.
-// Since Valid.equal(null) returns the chain object, if you call isNull:
-//   Valid.isNull().verify(1) JS complains "Property isNull is not a function"
+// In an ideal world you could just do this:  Valid.null() = Valid.equal(null);
+// In our world, that only works if you don't call it: Valid.null.verify(1);  Ugh.
+// Since Valid.equal(null) returns the chain object, if you call null:
+//   Valid.null().verify(1) JS complains "Property null is not a function"
 // For this to work, JS needs to a callable object with a prototype chain.
 // And, without using nonstandard __proto__, I don't think that's possible...?
 Valid.define = function define() {
@@ -140,7 +139,7 @@ Valid.or = function or() {
 
 Valid.match = function match(pattern, modifiers) {
     if(typeof pattern !== 'function') pattern = new RegExp(pattern, modifiers);
-    return this.isString().AddTest( function Match(value) {
+    return this.string().AddTest( function Match(value) {
         if(!value.match(pattern)) return "does not match " + pattern;
     });
 };
@@ -152,23 +151,23 @@ Valid.todo = function(name) {
     return this.fail((name ? name : "this") + " is still todo");
 };
 
-Valid.isUndefined   = Valid.equal(undefined).define();
-Valid.defined       = Valid.not(Valid.isUndefined(), "is undefined").define();
-Valid.isNull        = Valid.equal(null).define();
-Valid.notNull       = Valid.not(Valid.isNull(), "is null").define();
+Valid.undefined   = Valid.equal(undefined).define();
+Valid.defined       = Valid.not(Valid.undefined(), "is undefined").define();
+Valid.null        = Valid.equal(null).define();
+Valid.notNull       = Valid.not(Valid.null(), "is null").define();
 Valid.exists        = Valid.messageFor(Valid.defined().notNull(), "does not exist").define();
 Valid.noexisty      = Valid.not(Valid.exists(), "exists").define();
-Valid.isBoolean     = Valid.typeOf('boolean').define();
-Valid.isTrue        = Valid.equal(true).define();
-Valid.isFalse       = Valid.equal(false).define();
-Valid.isNumber      = Valid.typeOf('number').define();
-Valid.isInteger     = Valid.isNumber().messageFor(Valid.mod(1), "is not an integer").define();
-Valid.isString      = Valid.typeOf('string').define();
+Valid.boolean     = Valid.typeOf('boolean').define();
+Valid.true        = Valid.equal(true).define();
+Valid.false       = Valid.equal(false).define();
+Valid.number      = Valid.typeOf('number').define();
+Valid.integer     = Valid.number().messageFor(Valid.mod(1), "is not an integer").define();
+Valid.string      = Valid.typeOf('string').define();
 Valid.blank         = Valid.messageFor(Valid.or(Valid.noexisty(),Valid.match(/^\s*$/)), "is not blank").define();
-Valid.nonBlank      = Valid.not(Valid.blank(), "is blank").define();
-Valid.isFunction    = Valid.typeOf('function').define();
-Valid.isObject      = Valid.typeOf('object').define();
+Valid.notBlank      = Valid.not(Valid.blank(), "is blank").define();
+Valid.function    = Valid.typeOf('function').define();
+Valid.object      = Valid.typeOf('object').define();
 
-Valid.optional = function(test) { return Valid.or(Valid.messageFor(Valid.isUndefined(),"is optional"), test); };
+Valid.optional = function(test) { return Valid.or(Valid.messageFor(Valid.undefined(),"is optional"), test); };
 Valid.notEqual = function(arg) { return Valid.not(Valid.equal(arg), "is equal to " + arg); };
 

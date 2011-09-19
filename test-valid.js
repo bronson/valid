@@ -12,16 +12,16 @@ Valid.assert = function assert(value, expected) {
 
 Valid.assert("any value", "no tests!");
 
-Valid.isUndefined().assert(undefined);
-Valid.isUndefined().assert(1, "is not equal to undefined");
-Valid.isUndefined().assert(null, "is not equal to undefined");
+Valid.undefined().assert(undefined);
+Valid.undefined().assert(1, "is not equal to undefined");
+Valid.undefined().assert(null, "is not equal to undefined");
 Valid.defined().assert(undefined, "is undefined");
 Valid.defined().assert(1);
 Valid.defined().assert(null);
 
-Valid.isNull().assert(null);
-Valid.isNull().assert(1, "is not equal to null");              // "is not null" would sound better
-Valid.isNull().assert(undefined, "is not equal to null");
+Valid.null().assert(null);
+Valid.null().assert(1, "is not equal to null");              // "is not null" would sound better
+Valid.null().assert(undefined, "is not equal to null");
 Valid.notNull().assert(null, "is null");
 Valid.notNull().assert(1);
 Valid.notNull().assert(undefined);
@@ -35,13 +35,13 @@ Valid.exists().assert(undefined, "does not exist");
 // closure leak meant only one test would be queued, not all three
 Valid.equal(null).assert(null);
 Valid.equal(null).assert(undefined, "is not equal to null");
-Valid.equal(3).assert(Valid.isUndefined().isNull().isNumber()._queue.length );
+Valid.equal(3).assert(Valid.undefined().null().number()._queue.length );
 Valid.notEqual(null).assert(undefined);
 Valid.notEqual(null).assert(null, "is equal to null");
 
 
 Valid.typeOf('undefined').assert(undefined);
-// typeof null returns 'object' on some JS implementations, use isNull()
+// typeof null returns 'object' on some JS implementations, use null()
 Valid.typeOf('number').assert(123);
 Valid.typeOf('string').assert('123');
 Valid.typeOf('garbage').assert('123', "is of type string not garbage");
@@ -49,28 +49,35 @@ Valid.typeOf(undefined).assert(undefined, "typeOf requires a string argument, no
 Valid.typeOf(123).assert(123, "typeOf requires a string argument, not number");
 
 // booleans
-Valid.isBoolean().assert(true);
-Valid.isBoolean().assert(false);
-Valid.isBoolean().assert(undefined, "is of type undefined not boolean");
-Valid.isTrue().assert(true);
-Valid.isTrue().assert(false, "is not equal to true");
-Valid.isFalse().assert(false);
-Valid.isFalse().assert(true, "is not equal to false");
+Valid.boolean().assert(true);
+Valid.boolean().assert(false);
+Valid.boolean().assert(undefined, "is of type undefined not boolean");
+Valid.true().assert(true);
+Valid.true().assert(false, "is not equal to true");
+Valid.false().assert(false);
+Valid.false().assert(true, "is not equal to false");
 
 // numbers
-Valid.isNumber().assert(123);
-Valid.isNumber().assert('123', "is of type string not number");
-Valid.isNumber().assert(undefined, "is of type undefined not number");
-Valid.isInteger().assert(123.0);
-Valid.isInteger().assert('123.0', "is of type string not number");
-Valid.isInteger().assert(123.1, "is not an integer");
+Valid.number().assert(123);
+Valid.number().assert('123', "is of type string not number");
+Valid.number().assert(undefined, "is of type undefined not number");
+Valid.integer().assert(123.0);
+Valid.integer().assert('123.0', "is of type string not number");
+Valid.integer().assert(123.1, "is not an integer");
 
 // strings
-Valid.isString().assert(' 123');
-Valid.isString().assert(undefined, "is of type undefined not string");
+Valid.string().assert(' 123');
+Valid.string().assert(undefined, "is of type undefined not string");
 Valid.blank().assert(' \n\t  ');
 Valid.blank().assert('');
 Valid.blank().assert(null);
+Valid.blank().assert(undefined);
+Valid.blank().assert('    .', "is not blank");
+Valid.notBlank().assert('   bla');
+Valid.notBlank().assert('\n', "is blank");
+Valid.notBlank().assert('', "is blank");
+Valid.notBlank().assert(null, "is blank");
+Valid.notBlank().assert(undefined, "is blank");
 
 // regexes
 Valid.match(/^.*$/).assert('');
@@ -81,22 +88,22 @@ Valid.match(/1/).assert(1, "is of type number not string");
 Valid.equal(2).assert( Valid.match(/^abc$/)._queue.length ); // closure leak meant all matches were appended to the same Chain
 
 Valid.and().assert(null);                         // passing 0 tests succeeds unconditionally
-Valid.and( Valid.isNull() ).assert(null);                            // passing 1 arg success
-Valid.and( Valid.isNull() ).assert(undefined, "is not equal to null"); // passing 1 arg failure
+Valid.and( Valid.null() ).assert(null);                            // passing 1 arg success
+Valid.and( Valid.null() ).assert(undefined, "is not equal to null"); // passing 1 arg failure
 Valid.and( Valid.typeOf('string'), Valid.match(/c$/), Valid.match(/^a/) ).assert('abc');
 Valid.and( Valid.typeOf('string'), Valid.match(/^bbc$/) ).assert('abc', "does not match /^bbc$/");
 Valid.and( Valid.typeOf('number'), Valid.match(/^abc$/) ).assert('abc', "is of type string not number");
 
 Valid.or().assert(undefined);                     // passing 0 tests succeeds unconditionally
-Valid.or( Valid.isNull() ).assert(null);                            // passing 1 arg success
-Valid.or( Valid.isNull() ).assert(undefined, "is not equal to null"); // passing 1 arg failure
-Valid.or( Valid.isNull(), Valid.isUndefined() ).assert(undefined);
-Valid.or( Valid.isNull(), Valid.isUndefined() ).assert(null);
-Valid.or( Valid.isNull(), Valid.isNumber(), Valid.isString() ).assert('mosdef');
-Valid.or( Valid.isUndefined(), Valid.match(/^abc$/), Valid.match(/def$/) ).assert('mosdef');
+Valid.or( Valid.null() ).assert(null);                            // passing 1 arg success
+Valid.or( Valid.null() ).assert(undefined, "is not equal to null"); // passing 1 arg failure
+Valid.or( Valid.null(), Valid.undefined() ).assert(undefined);
+Valid.or( Valid.null(), Valid.undefined() ).assert(null);
+Valid.or( Valid.null(), Valid.number(), Valid.string() ).assert('mosdef');
+Valid.or( Valid.undefined(), Valid.match(/^abc$/), Valid.match(/def$/) ).assert('mosdef');
 Valid.or( Valid.typeOf('number'), Valid.match(/^bbc$/) ).assert('abc', "is of type string not number and does not match /^bbc$/");
 
-var nullOrString = Valid.or(Valid.isNull(), Valid.isString());
+var nullOrString = Valid.or(Valid.null(), Valid.string());
 nullOrString.assert(null);
 nullOrString.assert('123');
 nullOrString.assert(123, "is not equal to null and is of type number not string");
@@ -113,9 +120,9 @@ schema( Validator.IsNotBlank    ).validate(' a').result("' a' has leading whites
 schema( Validator.IsNotBlank    ).validate('').result("'' can't be blank");
 */
 
-Valid.optional(Valid.isInteger()).assert(undefined);
-Valid.optional(Valid.isInteger()).assert(12);
-Valid.optional(Valid.isInteger()).assert("12", "is optional and is of type string not number");
+Valid.optional(Valid.integer()).assert(undefined);
+Valid.optional(Valid.integer()).assert(12);
+Valid.optional(Valid.integer()).assert("12", "is optional and is of type string not number");
 
 /*
 schema( true  ).validate( true  ).result();
