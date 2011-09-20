@@ -2,15 +2,14 @@
 
 - Small, light, zero dependencies.
 - Can be used in Node, browsers, and Mongo/Couch Map/Reduce functions.
-- Can recursively test JSON data structures.
+- Recursively tests JSON data structures.
 - Easy to extend with your own validations.
-- Tests be used declaratively as well as immediately.
 - Good test coverage.
 
 
 ### Declarative
 
-    var inRange = Valid.min(4).max(9)
+    var inRange = Valid.number().min(4).max(9)
     inRange.verify(12)    // throws an error
     var stringInRange = inRange.typeof('string').errorHandler(Valid.TrueFalse)
     if(stringInRange.validate("not in range")) { /\* not executed \*/ }
@@ -99,27 +98,20 @@ just do this:
 # Extending Valid
 
 ## Validators
-  
-  
-
-## Error Handlers
-
-    // this.field tells what field we're operating on
-    Valid.errorHandler(function(message) { 
 
 
 # Alternatives
 
 <https://github.com/chriso/node-validator>
 
-- Only supports immediate use, can't declare validations.
 - The syntax is pretty sweet: `check('abc').len(6,12).isEmail();`
-- only meant to work inside node?
+- Only supports immediate use, can't declare validations.
+- Only meant to work inside node.  Can't recurse over JSON.
 
 <https://github.com/doffm/Onvalid>
 
-- Only supports static validation, can't do quick immediate validations.
-- Doesn't support static schemas (must use `{\__.eq(12)}` instead of `{12}`).
+- Validates JSON using a declared schema.
+- Only supports static use, can't do immediate validations.
 - Produces unsatisfying error messages on deeply nested schemas.
 
 
