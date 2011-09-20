@@ -1,4 +1,4 @@
-var Valid = require('./valid');
+var Valid = require('../lib/valid');
 
 // Like check() but throws if the result doesn't match the expectation
 Valid.assert = function assert(value, expected) {
@@ -40,13 +40,13 @@ Valid.notEqual(null).assert(undefined);
 Valid.notEqual(null).assert(null, "is equal to null");
 
 
-Valid.typeOf('undefined').assert(undefined);
+Valid.type('undefined').assert(undefined);
 // typeof null returns 'object' on some JS implementations, use null()
-Valid.typeOf('number').assert(123);
-Valid.typeOf('string').assert('123');
-Valid.typeOf('garbage').assert('123', "is of type string not garbage");
-Valid.typeOf(undefined).assert(undefined, "typeOf requires a string argument, not undefined");
-Valid.typeOf(123).assert(123, "typeOf requires a string argument, not number");
+Valid.type('number').assert(123);
+Valid.type('string').assert('123');
+Valid.type('garbage').assert('123', "is of type string not garbage");
+Valid.type(undefined).assert(undefined, "type requires a string argument, not undefined");
+Valid.type(123).assert(123, "type requires a string argument, not number");
 
 // booleans
 Valid.boolean().assert(true);
@@ -90,9 +90,9 @@ Valid.equal(2).assert( Valid.match(/^abc$/)._queue.length ); // closure leak mea
 Valid.and().assert(null);                         // passing 0 tests succeeds unconditionally
 Valid.and( Valid.null() ).assert(null);                            // passing 1 arg success
 Valid.and( Valid.null() ).assert(undefined, "is not equal to null"); // passing 1 arg failure
-Valid.and( Valid.typeOf('string'), Valid.match(/c$/), Valid.match(/^a/) ).assert('abc');
-Valid.and( Valid.typeOf('string'), Valid.match(/^bbc$/) ).assert('abc', "does not match /^bbc$/");
-Valid.and( Valid.typeOf('number'), Valid.match(/^abc$/) ).assert('abc', "is of type string not number");
+Valid.and( Valid.type('string'), Valid.match(/c$/), Valid.match(/^a/) ).assert('abc');
+Valid.and( Valid.type('string'), Valid.match(/^bbc$/) ).assert('abc', "does not match /^bbc$/");
+Valid.and( Valid.type('number'), Valid.match(/^abc$/) ).assert('abc', "is of type string not number");
 
 Valid.or().assert(undefined);                     // passing 0 tests succeeds unconditionally
 Valid.or( Valid.null() ).assert(null);                            // passing 1 arg success
@@ -101,7 +101,7 @@ Valid.or( Valid.null(), Valid.undefined() ).assert(undefined);
 Valid.or( Valid.null(), Valid.undefined() ).assert(null);
 Valid.or( Valid.null(), Valid.number(), Valid.string() ).assert('mosdef');
 Valid.or( Valid.undefined(), Valid.match(/^abc$/), Valid.match(/def$/) ).assert('mosdef');
-Valid.or( Valid.typeOf('number'), Valid.match(/^bbc$/) ).assert('abc', "is of type string not number and does not match /^bbc$/");
+Valid.or( Valid.type('number'), Valid.match(/^bbc$/) ).assert('abc', "is of type string not number and does not match /^bbc$/");
 
 var nullOrString = Valid.or(Valid.null(), Valid.string());
 nullOrString.assert(null);

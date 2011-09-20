@@ -1,0 +1,14 @@
+{ "name"         : "valid"
+, "description"  : "Library to quickly validate JSON."
+, "version"      : "0.1.0"
+, "keywords"     : [ "validation", "schema", "test", "json" ]
+, "author"       : { "name" : "Scott Bronson", "email" : "brons_valid@rinspin.com", "url" : "https://github.com/bronson" }
+, "contributors" : [ { "name": "Aaron Blohowiak", "url" : "https://github.com/aaronblohowiak" } ]
+, "licenses"     : [ { "type" : "MIT", "url" : "https://github.com/bronson/valid/blob/master/LICENSE" } ]
+, "homepage"     : "https://github.com/bronson/valid"
+, "repository"   : { "type" : "git", "url" : "http://github.com/bronson/valid" }
+, "bugs"         : { "web" : "https://github.com/bronson/valid/issues" }
+, "directories"  : { "lib" : "./lib" }
+, "main"         : "./lib"
+, "scripts"      : { "test" : "node test/test-valid.js" }
+}

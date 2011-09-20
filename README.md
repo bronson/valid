@@ -2,15 +2,16 @@
 
 - Small, light, zero dependencies.
 - Can be used in Node, browsers, and Mongo/Couch Map/Reduce functions.
-- Offers an error object similar to ActiveRecord validations.
-- Can be used declaratively as well as immediately.
+- Can recursively test JSON data structures.
+- Easy to extend with your own validations.
+- Tests be used declaratively as well as immediately.
 - Good test coverage.
 
 
 ### Declarative
 
   var inRange = Valid.min(4).max(9)
-  inRange(12)    // throws an error
+  inRange.verify(12)    // throws an error
   var stringInRange = inRange.typeof('string').errorHandler(Valid.TrueFalse)
   if(stringInRange.validate("not in range")) { /\* not executed \*/ }
 
