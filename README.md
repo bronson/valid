@@ -10,21 +10,21 @@
 
 ### Declarative
 
-  var inRange = Valid.min(4).max(9)
-  inRange.verify(12)    // throws an error
-  var stringInRange = inRange.typeof('string').errorHandler(Valid.TrueFalse)
-  if(stringInRange.validate("not in range")) { /\* not executed \*/ }
+    var inRange = Valid.min(4).max(9)
+    inRange.verify(12)    // throws an error
+    var stringInRange = inRange.typeof('string').errorHandler(Valid.TrueFalse)
+    if(stringInRange.validate("not in range")) { /\* not executed \*/ }
 
 
 ### Immediate
 
-  var check = Valid.checker(TrueFalse);  // uses Throw by default
-  if(check(12).inRange(4,9)) { /\* not executed \*/ }
+    var check = Valid.checker(TrueFalse);  // uses Throw by default
+    if(check(12).inRange(4,9)) { /\* not executed \*/ }
 
 what about going insane?
 
-  Object.prototype.assert = Valid.checker().errorHandler(Valid.Throw);
-  12.assert().min(4).max(9);    // throws an error
+    Object.prototype.assert = Valid.checker().errorHandler(Valid.Throw);
+    12.assert().min(4).max(9);    // throws an error
 
 
 # Handling Validation Errors
@@ -32,7 +32,7 @@ what about going insane?
 By default the validator raises an error when it finds invalid data
 (using the Valid.Throw handler).  To make it return a boolean result:
 
-  Valid.errorHandler(Valid.TrueFalse).validate(false);
+    Valid.errorHandler(Valid.TrueFalse).validate(false);
 
 ### Throw
 
@@ -42,11 +42,11 @@ By default the validator raises an error when it finds invalid data
 
 ### ErrorObject   (included with json-valid)
 
-  errors: an error object
-    .add([field], msg)  -- adds a message for the field.  A field of "." refers to the entire object.
-    .clear()            -- clears all error messages
-    .count([field])     -- tells how many total errors or just for the given field
-    .messages([field])  -- returns an array of all error messages concated with field name
+    errors: an error object
+      .add([field], msg)  -- adds a message for the field.  A field of "." refers to the entire object.
+      .clear()            -- clears all error messages
+      .count([field])     -- tells how many total errors or just for the given field
+      .messages([field])  -- returns an array of all error messages concated with field name
 
 
 # Built-In Validations
@@ -92,8 +92,8 @@ We don't offer inverses because not() is usually clearer.  If you'd
 rather write Valid.notIn(arr) instead of Valid.not(Valid.in(arr)),
 just do this:
 
-Valid.notIn = function(arr) { return Valid.not(Valid.in(arr)) }
-Valid.notIn = Valid.not(Valid.in)    // could this work?
+    Valid.notIn = function(arr) { return Valid.not(Valid.in(arr)) }
+    Valid.notIn = Valid.not(Valid.in)    // could this work?
 
 
 # Extending Valid
@@ -104,8 +104,8 @@ Valid.notIn = Valid.not(Valid.in)    // could this work?
 
 ## Error Handlers
 
-  // this.field tells what field we're operating on
-  Valid.errorHandler(function(message) { 
+    // this.field tells what field we're operating on
+    Valid.errorHandler(function(message) { 
 
 
 # Alternatives
