@@ -46,18 +46,31 @@ Valid.json(true ).assert(false,     {'.': {message: "does not equal true", value
 Valid.json(false).assert(true,      {'.': {message: "does not equal false", value: true}});
 Valid.json(false).assert(undefined, {'.': {message: "does not equal false", value: undefined}});
 
+Valid.json(null).assert(null);
+Valid.json(null).assert(undefined,  {'.': {message: "is not null", value: undefined}});
+Valid.json(undefined).assert(undefined);
+Valid.json(undefined).assert(null,  {".": {message: "does not equal undefined", value:null}});
+Valid.json(null).assert({},         {".": {message: "is not null", value: {}}});
+Valid.json({}).assert(null,         {".": {message: "is null", value: null}});
+
 Valid.json('abc'  ).assert('abc');
 Valid.json('abc'  ).assert('abc ',  {'.': {message: "does not equal 'abc'", value: "abc "}});
 Valid.json(123    ).assert(123);
 Valid.json(123    ).assert(123.1,   {'.': {message: "does not equal 123", value: 123.1}});
 Valid.json(/^abc$/).assert('abc');
 Valid.json(/^abc$/).assert('abcd',  {'.': {message: "does not match /^abc$/", value: 'abcd'}});
+Valid.json(/abc/  ).assert('In abc.');
+Valid.json(/abc/i ).assert('DEABCDEF');
+Valid.json(/abc/  ).assert('DEABCDEF', {".": {message:"does not match /abc/", value:"DEABCDEF"}});
 
-Valid.json( {abc: 123}           ).assert( {abc: 123});
-Valid.json( {abc: 123, def: 456} ).assert( {abc: 123},           {'.': {message: "is missing def", value: {"abc":123}}})
-Valid.json( {abc: 123}           ).assert( {abc: 123, def: 456}, {'.': {message: "shouldn't have def", value: {"abc":123,"def":456}}})
+Valid.json( {abc: 123}           ).assert({abc: 123});
+Valid.json( {abc: 123, def: 456} ).assert({abc: 123},           {'.': {message: "is missing def", value: {"abc":123}}})
+Valid.json( {abc: 123}           ).assert({abc: 123, def: 456}, {'.': {message: "shouldn't have def", value: {"abc":123,"def":456}}})
+Valid.json( {abc: 123}           ).assert({}, {".":{message: "is missing abc", value: {}}});
+Valid.json( {}                   ).assert({abc: 123}, {".":{message: "shouldn't have abc", value: {"abc":123}}});
 
 Valid.json({a: {b: {c: 1}}}).assert({a: {b: {c: 2}}}, {'a.b.c': {message: "does not equal 1", value: 2}})
+Valid.json({a: {b: /wut/i}}).assert({a: {b: "NOWUTY"}})
 
 /*
 // arrays
