@@ -10,5 +10,5 @@
 , "bugs"         : { "web" : "https://github.com/bronson/valid/issues" }
 , "directories"  : { "lib" : "./lib" }
 , "main"         : "./lib"
-, "scripts"      : { "test" : "node test/test-valid.js" }
+, "scripts"      : { "test" : "node test/valid.test.js && node test/validjson.test.js" }
 }
