@@ -47,19 +47,19 @@ Valid.json(false).assert(true,      {'.': {message: "does not equal false", valu
 Valid.json(false).assert(undefined, {'.': {message: "does not equal false", value: undefined}});
 
 Valid.json('abc'  ).assert('abc');
-Valid.json('abc'  ).assert('abc ', {'.': {message: "does not equal 'abc'", value: "abc "}});
+Valid.json('abc'  ).assert('abc ',  {'.': {message: "does not equal 'abc'", value: "abc "}});
 Valid.json(123    ).assert(123);
-Valid.json(123    ).assert(123.1,  {'.': {message: "does not equal 123", value: 123.1}});
+Valid.json(123    ).assert(123.1,   {'.': {message: "does not equal 123", value: 123.1}});
 Valid.json(/^abc$/).assert('abc');
-Valid.json(/^abc$/).assert('abcd', {'.': {message: "does not match /^abc$/", value: 'abcd'}});
+Valid.json(/^abc$/).assert('abcd',  {'.': {message: "does not match /^abc$/", value: 'abcd'}});
 
 Valid.json( {abc: 123}           ).assert( {abc: 123});
 Valid.json( {abc: 123, def: 456} ).assert( {abc: 123},           {'.': {message: "is missing def", value: {"abc":123}}})
 Valid.json( {abc: 123}           ).assert( {abc: 123, def: 456}, {'.': {message: "shouldn't have def", value: {"abc":123,"def":456}}})
 
-/*
-schema( {a: {b: {c: 1}}}     ).validate( {a: {b: {c: 2}}}     ).result("a,b,c: 2 does not equal 1 for [object Object]");  // TODO: improve error message
+Valid.json({a: {b: {c: 1}}}).assert({a: {b: {c: 2}}}, {'a.b.c': {message: "does not equal 1", value: 2}})
 
+/*
 // arrays
 schema( [12, 13] ).validate( [12, 13] ).result();
 schema( [12, 13] ).validate( [12, 14]  ).result("1: 14 does not equal 13 for 12,14"); // TODO improve error message
