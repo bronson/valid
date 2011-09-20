@@ -53,11 +53,11 @@ Valid.json(123    ).assert(123.1,  {'.': {message: "does not equal 123", value: 
 Valid.json(/^abc$/).assert('abc');
 Valid.json(/^abc$/).assert('abcd', {'.': {message: "does not match /^abc$/", value: 'abcd'}});
 
-/*
-schema( {abc: 123}           ).validate( {abc: 123}           ).result();
-schema( {abc: 123, def: 456} ).validate( {abc: 123}           ).result("[object Object] is missing def");
-schema( {abc: 123}           ).validate( {abc: 123, def: 456} ).result("[object Object] has def but template does not");
+Valid.json( {abc: 123}           ).assert( {abc: 123});
+Valid.json( {abc: 123, def: 456} ).assert( {abc: 123},           {'.': {message: "is missing def", value: {"abc":123}}})
+Valid.json( {abc: 123}           ).assert( {abc: 123, def: 456}, {'.': {message: "shouldn't have def", value: {"abc":123,"def":456}}})
 
+/*
 schema( {a: {b: {c: 1}}}     ).validate( {a: {b: {c: 2}}}     ).result("a,b,c: 2 does not equal 1 for [object Object]");  // TODO: improve error message
 
 // arrays
