@@ -7,6 +7,10 @@
 - Good test coverage.
 
 
+# TODO
+
+- test? valid? check?  Could these names be more generic?
+
 ### Declarative
 
     var inRange = Valid.number().min(4).max(9)
