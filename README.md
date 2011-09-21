@@ -7,101 +7,80 @@
 - Good test coverage.
 
 
-# TODO
+```javascript
+    var Valid = require('valid');
+    var inRange = Valid.number().min(4).max(9)
+    inRange.check(3)            // check returns true/false, here it returns false
+    inRange.test(12)            // returns "is not less than or equal to 9"
+    inRange.odd().verify(6)     // throws "6 is not odd"
+
+    Valid.optional().string()   // success is null, undefined, or a string
+    Valid.array(Valid.integer).verify([1,2,3]);  // each item in the array must be an integer
+
+    // validate JSON schemas:
+    var Valid = require('validjson');
+    Valid.json({a:1,b:Valid.integer()}).verify({a:1,b:10});
+
+    TODO? Valid(9).lt(12).gt(10)      // immediate mode, throws "9 is not greater than 10"
+```
+
+# Gruntles
 
 - test? valid? check?  Could these names be more generic?
-
-### Declarative
-
-    var inRange = Valid.number().min(4).max(9)
-    inRange.verify(12)    // throws an error
-    var stringInRange = inRange.typeof('string').errorHandler(Valid.TrueFalse)
-    if(stringInRange.validate("not in range")) { /\* not executed \*/ }
-
-
-### Immediate
-
-    var check = Valid.checker(TrueFalse);  // uses Throw by default
-    if(check(12).inRange(4,9)) { /\* not executed \*/ }
-
-what about going insane?
-
-    Object.prototype.assert = Valid.checker().errorHandler(Valid.Throw);
-    12.assert().min(4).max(9);    // throws an error
-
-
-# Handling Validation Errors
-
-By default the validator raises an error when it finds invalid data
-(using the Valid.Throw handler).  To make it return a boolean result:
-
-    Valid.errorHandler(Valid.TrueFalse).validate(false);
-
-### Throw
-
-### Console
-
-### TrueFalse
-
-### ErrorObject   (included with json-valid)
-
-    errors: an error object
-      .add([field], msg)  -- adds a message for the field.  A field of "." refers to the entire object.
-      .clear()            -- clears all error messages
-      .count([field])     -- tells how many total errors or just for the given field
-      .messages([field])  -- returns an array of all error messages concated with field name
+- todo: isDate, isBefore, isAfter
+- todo: isEmail() isIP() isUrl() isUUID()
+- noexisty is a stupid name
 
 
 # Built-In Validations
 
-Don't include validations by default?
-  Syntax is very personal.  Do you prefer in, contains, isIn, etc?
-Don't do isBlah.  Just blah.
-Find the BARE MINIMUM non-composed validators.  Users can compose their own APIs.
+Examples:
 
+- Valid.equal(null).verify(null)
+- Valid.equal(1,2,3).verify(2)
+- Valid.len(3,5).verify("1234");       // Valid.length(3,5) works too but some JS implementations complain
+- Valid.len(3,5).verify("[1,2,3,4]");
 
-in(1,2)          equivalent: in([1,2]) in({1:ignored,2:ignored})
-          in is a keyword...  use synonym isIn if this is a problem.
-              have a synonym module?  Valid.isOneOf = Valid.in
+A compendium:
 
-match(regex)
-length(min, [max])   applies to strings, arrays, or any object that has a length field.
-
-and(Validation, Validation, ...)
-  though why would you do this since Validation.validation().validation() is the same.
-or(Validation, Validation, ...)
-not(Validation)
-  Make any a synonym for or and every a synonym or and?
-  What about not(and) and not(or)?
-optional(Validation, Validation, ...)
-min -- uses JS's &lt; and &gt; operators so can be used on strings too.
-max --
-  also gt, ge, lt, le, eq, ne?
-
-
-isDate
-  isBefore
-  isAfter
-
-isEmail()
-isIP()
-isUrl()
-isUUID()
-
-json(template) -- checks an entire json structure
-
-
-We don't offer inverses because not() is usually clearer.  If you'd
-rather write Valid.notIn(arr) instead of Valid.not(Valid.in(arr)),
-just do this:
-
-    Valid.notIn = function(arr) { return Valid.not(Valid.in(arr)) }
-    Valid.notIn = Valid.not(Valid.in)    // could this work?
+- equal(a[,b...]), notEqual(...), oneOf(arrayOrObject)
+- defined(), undef(), undefined()
+- nil(), null(), notNull()
+- exists(), noexisty()  (!)
+- array([test]), len(min,max), empty()
+- boolean(), true(), false()
+- number(), integer(), mod(x[,rem]), even(), odd(), max(n), min(n)
+- string([test]), len(min,max), blank(), notBlank()
+- match(regex[,modifiers]), nomatch(regex[,modifiers])
+- eq(n), lt(n), le(n), ge(n), gt(n), ne(n)
+- nop(), fail([message]), messageFor(test,message), todo([test])
+- and(test[,test...]), or(test[,test...]), not(test,message)
 
 
 # Extending Valid
 
-## Validators
+To define your own tests, just end the chain with "define()"
+and add it to the root object:
+
+```javascript
+    Valid.latitude  = Valid.ge(-90).le(90).define();
+    Valid.longitude = Valid.ge(-180).le(180).define();
+    Valid.integer().latitude().verify(20);    // success!
+```
+
+You can also add tests that take parameters:
+
+```javascript
+    Valid.mod10 = function(rem) { return this.mod(10,rem) }
+    Valid.mod10(6).verify(127);   // throws "127 mod 10 is 7 not 6"
+```
+
+Or just rename them:
+
+```javascript
+    Valid.every = Valid.and;
+    Valid.any = Valid.or;
+```
 
 
 # Alternatives

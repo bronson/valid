@@ -98,6 +98,14 @@ Valid.number().assert(undefined, "is of type undefined not number");
 Valid.integer().assert(123.0);
 Valid.integer().assert('123.0', "is of type string not number");
 Valid.integer().assert(123.1, "is not an integer");
+Valid.even().assert(0);
+Valid.even().assert(12);
+Valid.even().assert(17, "is not even");
+Valid.even().assert(0);
+Valid.odd().assert(1);
+Valid.odd().assert(17);
+Valid.odd().assert(12, "is not odd");
+Valid.odd().assert(0, "is not odd");
 
 // strings
 Valid.string().assert(' 123');
