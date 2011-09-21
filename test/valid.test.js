@@ -1,6 +1,10 @@
+// valid.test.js
+// Tests Valid's default set of validations
+
 var Valid = require('../lib/valid');
 
-// Like check() but throws if the result doesn't match the expectation
+
+// throws an error if the result doesn't exactly match the expectation
 Valid.assert = function assert(value, expected) {
     var actual = this.test(value);
     if(expected !== actual) {

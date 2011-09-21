@@ -1,9 +1,14 @@
+// validjson.test.js
+// Tests Valid's json schema validator
+
 var Valid = require('../lib/validjson');
 var DeepCompare = require('./deepcompare');
 
+
+// throws an error unless the result exactly matches what is expected
 Valid.assert = function assert(value, expected) {
     var actual = this.test(value);
-    var diffstr = DeepCompare("", expected, actual);
+    var diffstr = DeepCompare(expected, actual);
     if(diffstr) {
         var exstr = (expected === undefined ? "success" : JSON.stringify(expected));
         var acstr = (actual === undefined ? "success" : JSON.stringify(actual));
@@ -53,6 +58,7 @@ if(false) Valid.json(PersonSchema).assert({   // now validate this JSON
         CountryCode  : "US"
     }
 });
+
 
 
 Valid.json(true ).assert(true);
