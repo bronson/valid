@@ -64,6 +64,11 @@ Valid.equal(1,2,3,4,5).assert(4);
 Valid.equal(1,2,3,4,5).assert(6, "is not 1, 2, 3, 4 or 5");
 Valid.equal("able","baker").assert(undefined, "is not 'able' or 'baker'");
 
+Valid.oneOf().assert(undefined, "oneOf needs a collection");
+Valid.oneOf([1,2,3,4,5]).assert(4);
+Valid.oneOf({a:1,b:2,c:3}).assert('c');
+Valid.oneOf({a:1,b:2,c:3}).assert(2, "is not one of the options");
+
 // typeof
 Valid.type('undefined').assert(undefined);
 // typeof null returns 'object' on some JS implementations, use null()

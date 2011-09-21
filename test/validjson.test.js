@@ -18,13 +18,13 @@ Valid.assert = function assert(value, expected) {
 var AddressSchema = {     // schema for an address
     Address         : Valid.array(Valid.string()).len(1,2),
     CityName        : Valid.notBlank(),
-    StateName       : /^[A-Z][A-Z]$/,
+    StateName       : /^[A-Z][A-Z]$/,      // or Valid.oneOf({AR:true,AZ:true,...})
     PostalCode      : /^[0-9]{5}(-[0-9]{4})?/,
     CountryCode     : "US"
 };
 
 var PersonSchema = {      // schema for a person
-//    NamePrefixText  : Valid.oneOf("", "Mr.", "Mrs.", "Ms.", "Dr."),
+    NamePrefixText  : Valid.equal("", "Mr.", "Mrs.", "Ms.", "Dr."),
     FirstName       : Valid.notBlank(),
     MiddleName      : Valid.optional(Valid.string()),
     LastName        : Valid.notBlank(),
@@ -33,8 +33,8 @@ var PersonSchema = {      // schema for a person
 };
 
 
-Valid.json(PersonSchema).assert({   // and here is some data that matches Person
-//   NamePrefixText : '',
+Valid.json(PersonSchema).assert({   // now validate this JSON
+    NamePrefixText : '',
     FirstName      : 'Scott',
     MiddleName     : undefined,
     LastName       : 'Bronson',
