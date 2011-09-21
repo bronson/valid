@@ -74,16 +74,18 @@ See [valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js).
 
 # Errors
 
-When a validation fails, the validation is expected to return a string ready
-for concatenation: "is not even", "is not equal to 12", etc.
+When a validation fails, the validation returns a string ready
+for concatenation: "is not even", "is not equal to 12", "mod 4 is 2".
+If the error is being thrown then the failing value is tacked onto the front:
+"3 is not even", "null is not equal to 12", "6 mod 4 is 2".
 
 There is one exception: JSON validations.  Because they can return multiple
 errors, they return an object instead of a string:
 
 ```javascript
     {
-        "Name"             : { message: "is blank", value: "" },
-        "Address[1].State" : { message: "doesn't match /[A-Z][A-Z]/", value: "ca" }
+        "Name"               : { message: "is blank", value: "" },
+        "Addresses[0].State" : { message: "doesn't match /[A-Z][A-Z]/", value: "ca" }
     }
 ```
 
