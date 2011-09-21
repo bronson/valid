@@ -1,4 +1,5 @@
 var Valid = require('../lib/valid');
+var DeepCompare = require('./deepcompare');
 
 // Like check() but throws if the result doesn't match the expectation
 Valid.assert = function assert(value, expected) {
