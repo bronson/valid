@@ -1,7 +1,8 @@
 var Valid = require('../lib/validjson');
 
 // can't use JSON.stringify for comparison because of key order problems
-function JsonCompare(path, a, b) {
+// returns undefined if equal or a string describing the location of the difference.
+function DeepCompare(path, a, b) {
     if(typeof a !== typeof b) return path + ": " + (typeof a) + " vs " + (typeof b);
     switch(typeof a) {
         case 'string': case 'number': case 'boolean': case 'undefined':
@@ -15,7 +16,7 @@ function JsonCompare(path, a, b) {
             if(!(b instanceof Array)) return path + ": should be an Array";
             if(a.length !== b.length) return path + " should be length " + a.length + " not " + b.length;
             for(var i=0; i < a.length; i++) {
-                var iresult = JsonCompare(path+"["+i+"]", a[i], b[i]);
+                var iresult = DeepCompare(path+"["+i+"]", a[i], b[i]);
                 if(iresult) return iresult;
             }
         } else {
@@ -23,7 +24,7 @@ function JsonCompare(path, a, b) {
             for(var akey in a) {
                 if(!a.hasOwnProperty(akey)) continue;
                 if(!(akey in b)) return path + ": " + akey + " is missing";
-                var aresult = JsonCompare(path+"."+akey, a[akey], b[akey]);
+                var aresult = DeepCompare(path+"."+akey, a[akey], b[akey]);
                 if(aresult) return aresult;
             }
             for(var bkey in b) {
@@ -33,21 +34,63 @@ function JsonCompare(path, a, b) {
         }
         break;
 
-        default: throw "what is a " + (typeof a) + "?";
+        default: return path + ": what is a " + (typeof a) + "?";
     }
 }
 
 
-// Like check() but throws if the result doesn't match the expectation
 Valid.assert = function assert(value, expected) {
     var actual = this.test(value);
-    var diffstr = JsonCompare("", expected, actual);
+    var diffstr = DeepCompare("", expected, actual);
     if(diffstr) {
         var exstr = (expected === undefined ? "success" : JSON.stringify(expected));
         var acstr = (actual === undefined ? "success" : JSON.stringify(actual));
         throw value + ":\n expected " + exstr + "\n  but got " + acstr + "\n  (" + diffstr + ")";
     }
 };
+
+
+
+// quick real-world scenario...
+
+var Address = {     // schema for an address
+    Address         : Valid.array(Valid.string()).len(1,2),
+    CityName        : Valid.notBlank(),
+    StateName       : /^[A-Z][A-Z]$/,
+    PostalCode      : /^[0-9]{5}(-[0-9]{4})?/,
+    CountryCode     : "US"
+};
+
+var Person = {      // schema for a person
+//    NamePrefixText  : Valid.oneOf("", "Mr.", "Mrs.", "Ms.", "Dr."),
+    FirstName       : Valid.notBlank(),
+    MiddleName      : Valid.optional(Valid.string()),
+    LastName        : Valid.notBlank(),
+    HomeAddress     : Address,
+    WorkAddress     : Address
+}
+
+
+Valid.json(Person).assert({   // and here is some data that matches Person
+//   NamePrefixText : '',
+    FirstName      : 'Scott',
+    MiddleName     : undefined,
+    LastName       : 'Bronson',
+    HomeAddress    : {
+        Address      : ["123 Easy St."],
+        CityName     : "Santa Cruz",
+        StateName    : "CA",
+        PostalCode   : "95063-1337",
+        CountryCode  : "US"
+    },
+    WorkAddress    : {
+        Address    : ["5 Hard Knock Pl.", "Suite 1314"],
+        CityName   : "San Francisco",
+        StateName  : "CA",
+        PostalCode : "94117-7114",
+        CountryCode  : "US"
+    }
+});
 
 
 Valid.json(true ).assert(true);
@@ -98,11 +141,3 @@ Valid.json(Valid.array()               ).assert(null,      {".": {message: "is n
 Valid.json([12, Valid.integer()]).assert([12, 13]);
 Valid.json([12, Valid.integer()]).assert([12, "13"],       {"[1]": {message: "is of type string not number", value: "13"}});
 
-/*
-var _ = Validator;
-schema( _.IsArray(_.IsInteger) ).validate([12, 13, 14]).result();
-schema( _.IsArray(_.IsInteger, {min: 1, max: 3}) ).validate([12, 13]).result();
-schema( _.IsArray(_.IsString,  {min: 1, max: 3}) ).validate([12, 13]).result(["0: 12 is number, not string for 12,13", "1: 13 is number, not string for 12,13"]); // TODO: improve error message
-schema( _.IsArray(_.IsInteger, {min: 3, max: 4}) ).validate([12, 13]).result("12,13 has fewer than 3 elements");
-schema( _.IsArray(_.IsInteger, {min: 1, max: 0}) ).validate([12, 13]).result("12,13 has more than 0 elements");
-*/
