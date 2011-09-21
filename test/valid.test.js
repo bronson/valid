@@ -130,14 +130,14 @@ Valid.match(/1/).assert(1, "is of type number not string");
 Valid.match(/ABC/).assert('abcdef', "does not match /ABC/");
 Valid.match(/ABC/i).assert('noodabc ');
 Valid.match('ABC', 'i').assert('noodabc ');
-Valid.nomatch(/.../).assert('12');
+Valid.nomatch(/.../).assert('--');
 Valid.nomatch('wut', 'i').assert('WUT', 'matches /wut/i');
 Valid.nomatch(/^\s*|\s*$/, 'i').assert('doh ', "matches /^\\s*|\\s*$/");
 
 // arrays
 Valid.array().empty().assert([]);
 Valid.array().empty().assert(null, "is not an array");
-Valid.array().empty().assert([null], "is not empty");
+Valid.array().empty().assert([undefined], "is not empty");
 Valid.len(0).assert([]);
 Valid.len(0,0).assert([]);
 Valid.len(0,0).assert([undefined], "has length 1, greater than 0");
@@ -200,9 +200,11 @@ Valid.lt('yyz').assert('yyz', "is not less than 'yyz'");
 Valid.le('yyz').assert('yyzz', "is not less than or equal to 'yyz'");
 
 // optional
-Valid.optional(Valid.integer()).assert(undefined);
-Valid.optional(Valid.integer()).assert(12);
-Valid.optional(Valid.integer()).assert("12", "is optional and is of type string not number");
+Valid.optional().assert(undefined);   // an optional with no tests is equivalent to nop()
+Valid.optional().integer().assert(undefined);
+Valid.optional().integer().assert(null);
+Valid.optional().integer().assert(12);
+Valid.optional().integer().assert("12", "is of type string not number");
 
 // static
 var nullOrString = Valid.or(Valid.nil(), Valid.string());

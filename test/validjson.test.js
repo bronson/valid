@@ -26,17 +26,17 @@ var AddressSchema = {     // schema for an address
 var PersonSchema = {      // schema for a person
     NamePrefixText  : Valid.equal("", "Mr.", "Mrs.", "Ms.", "Dr."),
     FirstName       : Valid.notBlank(),
-    MiddleName      : Valid.optional(Valid.string()),
+    MiddleName      : Valid.optional().string(),
     LastName        : Valid.notBlank(),
     HomeAddress     : AddressSchema,
     WorkAddress     : AddressSchema
 };
 
 
-Valid.json(PersonSchema).assert({   // now validate this JSON
+if(false) Valid.json(PersonSchema).assert({   // now validate this JSON
     NamePrefixText : '',
     FirstName      : 'Scott',
-    MiddleName     : undefined,
+    MiddleName     : null,
     LastName       : 'Bronson',
     HomeAddress    : {
         Address      : ["123 Easy St."],
@@ -87,6 +87,16 @@ Valid.json({}                  ).assert({abc: 123}, {".":{message: "shouldn't ha
 Valid.json({a: {b: {c: 1}}}).assert({a: {b: {c: 2}}}, {'a.b.c': {message: "does not equal 1", value: 2}});
 Valid.json({a: {b: /wut/i}}).assert({a: {b: "NOWUTY"}});
 
+// Valid chains
+Valid.json(Valid.optional().string()).assert(undefined);
+Valid.json(Valid.optional().string()).assert(null);
+Valid.json(Valid.optional().string()).assert("5544");
+Valid.json(Valid.optional().string()).assert(6655, {'.': {message: 'is of type number not string', value: 6655} });
+
+// functions
+Valid.json(function(val) {}).assert(12);
+Valid.json(function(val) { return "value is " + val; }).assert(12, {'.': {message: 'value is 12', value: 12} });
+
 // arrays
 Valid.json([12, 13]).assert([12, 13]);
 Valid.json([12, 13]).assert([12, 14],    {"[1]": {message: "does not equal 13", value: 14}});
@@ -99,7 +109,7 @@ Valid.json(Valid.array()               ).assert([1,2,3]);
 Valid.json(Valid.array(Valid.integer())).assert([1,2,3]);
 Valid.json(Valid.array(Valid.integer())).assert([1,2,'3'], {".": {message: "item 2 is of type string not number", value: [1,2,"3"]}});
 Valid.json(Valid.array()               ).assert({"1":"2"}, {".": {message: "is not an array", value: {"1":"2"}}});
-Valid.json(Valid.array()               ).assert(null,      {".": {message: "is null", value: null}});
+Valid.json(Valid.array()               ).assert(null,      {".": {message: "is not an array", value: null}});
 Valid.json([12, Valid.integer()]).assert([12, 13]);
 Valid.json([12, Valid.integer()]).assert([12, "13"],       {"[1]": {message: "is of type string not number", value: "13"}});
 
