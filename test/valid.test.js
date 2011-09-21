@@ -1,5 +1,4 @@
 var Valid = require('../lib/valid');
-var DeepCompare = require('./deepcompare');
 
 // Like check() but throws if the result doesn't match the expectation
 Valid.assert = function assert(value, expected) {
@@ -47,6 +46,7 @@ Valid.exists().assert(undefined, "does not exist");
 // don't test Valid.noexisty() until the name doesn't suck
 
 // equality
+Valid.equal().assert(undefined, "equal needs at least one argument");
 Valid.equal(null).assert(null);
 Valid.equal(null).assert(undefined, "is not equal to null");
 Valid.equal("a").assert("a");
@@ -59,6 +59,10 @@ Valid.notEqual("a").assert(" ");
 Valid.notEqual("a").assert("a", "is equal to 'a'");
 Valid.notEqual(12).assert(13);
 Valid.notEqual(12).assert(12, "is equal to 12");
+Valid.equal(undefined, null).assert(null);
+Valid.equal(1,2,3,4,5).assert(4);
+Valid.equal(1,2,3,4,5).assert(6, "is not 1, 2, 3, 4 or 5");
+Valid.equal("able","baker").assert(undefined, "is not 'able' or 'baker'");
 
 // typeof
 Valid.type('undefined').assert(undefined);
