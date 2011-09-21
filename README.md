@@ -1,10 +1,11 @@
-# jsvalid
+# Valid
 
-- Small, light, zero dependencies.
-- Can be used in Node, browsers, and Mongo/Couch Map/Reduce functions.
+A lightweight, chaining validation library.
+
+- Zero dependencies.  Can be used in browsers, Node, and Mongo/Couch Map/Reduce functions.
 - Recursively tests JSON data structures.
 - Easy to extend with your own validations.
-- Good test coverage.
+- Excellent test coverage (run `npm test`).
 
 
 ```javascript
@@ -17,31 +18,44 @@
     Valid.optional().string()   // success is null, undefined, or a string
     Valid.array(Valid.integer).verify([1,2,3]);  // each item in the array must be an integer
 
-    // validate JSON schemas:
+    // validate JSON:
     var Valid = require('validjson');
-    Valid.json({a:1,b:Valid.integer()}).verify({a:1,b:10});
 
-    TODO? Valid(9).lt(12).gt(10)      // immediate mode, throws "9 is not greater than 10"
+    var Schema = {
+        Name:     Valid.notBlank(),
+        Numbers:  Valid.array(Valid.integer()).len(2,5),
+        State:    /^[A-Z][A-Z]$/,
+        Country:  "US"
+    };
+
+    var Data = {
+        Name:     "Jed",
+        Numbers:  [1, 9, 25],
+        State:    "CA",
+        Country:  "US"
+    }
+
+    Valid.json(Schema).verify(Data);
 ```
 
 # Gruntles
 
+This library is scary new.
+
 - test? valid? check?  Could these names be more generic?
 - todo: isDate, isBefore, isAfter
 - todo: isEmail() isIP() isUrl() isUUID()
+- Valid is not a great name. it's not even a noun.
 - noexisty is a stupid name
+- should valid and validjson really be in separate modules?
+- Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
+- Allow returning multiple errors for a single field, like Rails validations?
 
 
 # Built-In Validations
 
-Examples:
-
-- Valid.equal(null).verify(null)
-- Valid.equal(1,2,3).verify(2)
-- Valid.len(3,5).verify("1234");       // Valid.length(3,5) works too but some JS implementations complain
-- Valid.len(3,5).verify("[1,2,3,4]");
-
-A compendium:
+This is probably incomplete.
+See [valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js).
 
 - equal(a[,b...]), notEqual(...), oneOf(arrayOrObject)
 - defined(), undef(), undefined()
@@ -55,6 +69,23 @@ A compendium:
 - eq(n), lt(n), le(n), ge(n), gt(n), ne(n)
 - nop(), fail([message]), messageFor(test,message), todo([test])
 - and(test[,test...]), or(test[,test...]), not(test,message)
+- json(schema)
+
+
+# Errors
+
+When a validation fails, the validation is expected to return a string ready
+for concatenation: "is not even", "is not equal to 12", etc.
+
+There is one exception: JSON validations.  Because they can return multiple
+errors, they return an object instead of a string:
+
+```javascript
+    {
+        "Name"             : { message: "is blank", value: "" },
+        "Address[1].State" : { message: "doesn't match /[A-Z][A-Z]/", value: "ca" }
+    }
+```
 
 
 # Extending Valid
