@@ -18,9 +18,6 @@ A lightweight, chaining validation library.
     Valid.optional().string()   // success is null, undefined, or a string
     Valid.array(Valid.integer).verify([1,2,3]);  // each item in the array must be an integer
 
-    // validate JSON:
-    var Valid = require('validjson');
-
     var Schema = {
         Name:     Valid.notBlank(),
         Numbers:  Valid.array(Valid.integer()).len(2,5),
@@ -28,14 +25,14 @@ A lightweight, chaining validation library.
         Country:  "US"
     };
 
-    var Data = {
+    var data = {
         Name:     "Jed",
         Numbers:  [1, 9, 25],
         State:    "CA",
         Country:  "US"
     }
 
-    Valid.json(Schema).verify(Data);
+    Valid.json(Schema).verify(data);
 ```
 
 # Gruntles
@@ -47,7 +44,6 @@ This library is scary new.
 - todo: isEmail() isIP() isUrl() isUUID()
 - Valid is not a great name. it's not even a noun.
 - noexisty is a stupid name
-- should valid and validjson really be in separate modules?
 - Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
 - Allow returning multiple errors for a single field, like Rails validations?
 
@@ -80,7 +76,8 @@ If the error is being thrown then the failing value is tacked onto the front:
 "3 is not even", "null is not equal to 12", "6 mod 4 is 2".
 
 There is one exception: JSON validations.  Because they can return multiple
-errors, they return an object instead of a string:
+errors, they return an object instead of a string.  The `value` field contains
+the value that failed to validate.
 
 ```javascript
     {
