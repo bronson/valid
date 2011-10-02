@@ -44,6 +44,7 @@ This library is scary new.
 - todo: isEmail() isIP() isUrl() isUUID()
 - Valid is not a great name. it's not even a noun.
 - noexisty is a stupid name
+- covert to Rails-like "5 should equal 4" instead of current "5 is not equal to 4"?
 - Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
 
 # Introduction
@@ -63,7 +64,7 @@ Valid offers three ways of testing values:
 - check(val) -- returns true or false.
 - verify(val) -- throws the error if the validation fails.
 
-The error will be a string for simple validations or an error object
+The error will be a string for simple validations or an object
 for JSON validations (see _Errors_ below).
 
 # Built-In Validations

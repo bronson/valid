@@ -16,6 +16,23 @@ Valid.assert = function assert(value, expected) {
 };
 
 
+// first test the validation routines
+if(Valid.equal(4).test(4) !== undefined)           throw "test() success needs to return undefined";
+if(Valid.equal(4).test(5) !== "is not equal to 4") throw "test() failure needs to return a string";
+if(Valid.equal(4).check(4) !== true)               throw "check() success needs to return true";
+if(Valid.equal(4).check(5) !== false)              throw "check() failure needs to return false";
+if(Valid.equal(4).verify(4) !== undefined)         throw "verify() success needs to not return anything";
+
+var error;
+try {
+    Valid.equal(4).verify(5)
+} catch(e) {
+    error = e;
+}
+if(error === undefined)             throw "verify() did not throw an error!";
+if(error !== "5 is not equal to 4") throw "verify() failure threw: " + err;
+
+
 // pathological cases
 Valid.assert("any value", "no tests!");
 Valid.nop().assert("any value");                // no-op always succeeds

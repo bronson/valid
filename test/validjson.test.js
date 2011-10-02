@@ -62,7 +62,26 @@ if(false) Valid.json(PersonSchema).assert({   // now validate this JSON
 });
 
 
+// first test the validation routines
+if(Valid.json({a:1}).test({a:1}) !== undefined)    throw "test() success needs to return undefined";
+var result = DeepCompare(Valid.json({a:1}).test({a:2}), {'a': {value: 2, message: 'does not equal 1'}});
+if(result) throw "test() failure was wrong: " + result;
+if(Valid.json({a:1}).check({a:1}) !== true)       throw "check() success needs to return true";
+if(Valid.json({a:1}).check({a:2}) !== false)      throw "check() failure needs to return false";
+if(Valid.json({a:1}).verify({a:1}) !== undefined) throw "verify() success needs to not return anything";
 
+var error;
+try {
+    Valid.json({a:1}).verify({a:2})
+} catch(e) {
+    error = e;
+}
+if(error === undefined) throw "verify() did not throw an error!";
+result = DeepCompare(error, {'a': {value: 2, message: 'does not equal 1'}});
+if(result !== undefined) { throw "verify() failure: " + result }
+
+
+// now ensure Valid.json works
 Valid.json(true ).assert(true);
 Valid.json(false).assert(false);
 Valid.json(true ).assert(false,     {'.': {message: "does not equal true", value: false}});
