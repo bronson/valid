@@ -72,13 +72,13 @@ if(Valid.json({a:1}).verify({a:1}) !== undefined) throw "verify() success needs 
 
 var error;
 try {
-    Valid.json({a:1}).verify({a:2})
+    Valid.json({a:1}).verify({a:2});
 } catch(e) {
     error = e;
 }
 if(error === undefined) throw "verify() did not throw an error!";
 result = DeepCompare(error, {'a': {value: 2, message: 'does not equal 1'}});
-if(result !== undefined) { throw "verify() failure: " + result }
+if(result !== undefined) { throw "verify() failure: " + result; }
 
 
 // now ensure Valid.json works

@@ -25,12 +25,12 @@ if(Valid.equal(4).verify(4) !== undefined)         throw "verify() success needs
 
 var error;
 try {
-    Valid.equal(4).verify(5)
+    Valid.equal(4).verify(5);
 } catch(e) {
     error = e;
 }
 if(error === undefined)             throw "verify() did not throw an error!";
-if(error !== "5 is not equal to 4") throw "verify() failure threw: " + err;
+if(error !== "5 is not equal to 4") throw "verify() failure threw: " + error;
 
 
 // pathological cases
