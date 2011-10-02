@@ -1,5 +1,7 @@
 // validjson.test.js
-// Tests Valid's json schema validator
+//
+// Tests JSON validations that return an Error object
+
 
 var Valid = require('../lib/valid');
 var DeepCompare = require('./deepcompare');

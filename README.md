@@ -45,8 +45,26 @@ This library is scary new.
 - Valid is not a great name. it's not even a noun.
 - noexisty is a stupid name
 - Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
-- Allow returning multiple errors for a single field, like Rails validations?
 
+# Introduction
+
+Valid allows you to declare strings of validations and
+use them to test different values:
+
+```javascript
+    var checker = Valid.integer().even().min(6);
+    checker.verify(9);    // throws "9 is not even"
+    checker.verify(10);   // succeeds
+```
+
+Valid offers three ways of testing values:
+
+- test(val) -- returns undefined on success or the error if the validation failed.
+- check(val) -- returns true or false.
+- verify(val) -- throws the error if the validation fails.
+
+The error will be a string for simple validations or an error object
+for JSON validations (see _Errors_ below).
 
 # Built-In Validations
 
@@ -111,6 +129,25 @@ Or just rename them:
     Valid.every = Valid.and;
     Valid.any = Valid.or;
 ```
+
+
+# Weirdness
+
+On Node 0.4.x, if the console tries to print a Valid chain, you
+get this error:
+
+    > Valid.integer()
+    TypeError: Function.prototype.toString is not generic
+        at Function.toString (native)
+        at Array.toString (native)
+
+It's a Node bug.  0.5.x does the correct thing and prints the
+chain:
+
+    > Valid.integer()
+    { _queue: 
+       [ { [Function: SimpleTest] data: [Object] },
+         { [Function: SimpleTest] data: [Object] } ] }
 
 
 # Alternatives

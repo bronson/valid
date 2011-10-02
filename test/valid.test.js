@@ -1,5 +1,6 @@
 // valid.test.js
-// Tests Valid's default set of validations
+//
+// Tests non-JSON validations that return string errors.
 
 var Valid = require('../lib/valid');
 
