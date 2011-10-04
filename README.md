@@ -20,16 +20,20 @@ A lightweight, chaining validation library.
 
     var Schema = {
         Name:     Valid.notBlank(),
-        Numbers:  Valid.array(Valid.integer()).len(2,5),
-        State:    /^[A-Z][A-Z]$/,
-        Country:  "US"
+        Numbers:  Valid.array(Valid.integer()).len(2,5),   // an array of 2, 3, 4, or 5 integers
+        Address: {
+            State:    /^[A-Z][A-Z]$/,                      // shortcut for Valid.match(/^[A-Z][A-Z]$/)
+            Country:  "US"
+        }
     };
 
     var data = {
         Name:     "Jed",
         Numbers:  [1, 9, 25],
-        State:    "CA",
-        Country:  "US"
+        Address: {
+            State:    "CA",
+            Country:  "US"
+        }
     }
 
     Valid.json(Schema).verify(data);
@@ -72,20 +76,21 @@ for JSON validations (see _Errors_ below).
 This is probably incomplete.
 See [valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js).
 
-- equal(a[,b...]), notEqual(...), oneOf(arrayOrObject)
-- defined(), undef(), undefined()
-- nil(), null(), notNull()
-- exists(), noexisty()  (!)
-- array([test]), len(min,max), empty()
-- boolean(), true(), false()
-- number(), integer(), mod(x[,rem]), even(), odd(), max(n), min(n)
-- string([test]), len(min,max), blank(), notBlank()
-- match(regex[,modifiers]), nomatch(regex[,modifiers])
-- eq(n), lt(n), le(n), ge(n), gt(n), ne(n)
-- nop(), fail([message]), messageFor(test,message), todo([test])
-- and(test[,test...]), or(test[,test...]), not(test,message)
-- json(schema)
+- Presence: defined(), undef(), undefined\*(), nil(), null\*(), notNull()
+- Equality: equal(a[,b...]), notEqual(...), oneOf(arrayOrObject), in\*(arrayOrObject)
+- Comparison: eq(n), lt(n), le(n), ge(n), gt(n), ne(n)
+- Numbers: number(), integer(), mod(x[,rem]), even(), odd()
+- Booleans: boolean(), isTrue(), true\*(), isFalse(), false\*()
+- Arrays: array([validationForEachItem]), len(min,max), empty()
+- Strings: string(), len(min,max), blank(), notBlank()
+- Regexps: match(regex[,modifiers]), nomatch(regex[,modifiers])
+- Logic: and(test[,test...]), or(test[,test...]), not(test,message)
+- Utilities: nop(), fail([message]), messageFor(test,message), todo([test])
+- JSON: json(schema)
 
+\*: These are JavaScript keywords.  While `Valid.undefined()` will work
+with a lot of interpreters, it won't work everywhere.
+Each keyword validation has a more compatible alternative: Valid.undef(), Valid.nil(), etc.
 
 # Errors
 
@@ -108,7 +113,7 @@ the value that failed to validate.
 
 # Extending Valid
 
-To define your own tests, just end the chain with "define()"
+To define your own validations, just end the chain with "define()"
 and add it to the root object:
 
 ```javascript
@@ -117,7 +122,7 @@ and add it to the root object:
     Valid.integer().latitude().verify(20);    // success!
 ```
 
-You can also add tests that take parameters:
+You can also add validations that take parameters:
 
 ```javascript
     Valid.mod10 = function(rem) { return this.mod(10,rem) }

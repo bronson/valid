@@ -34,7 +34,7 @@ if(error !== "5 is not equal to 4") throw "verify() failure threw: " + error;
 
 
 // pathological cases
-Valid.assert("any value", "no tests!");
+Valid.assert("any value", "no validations!");
 Valid.nop().assert("any value");                // no-op always succeeds
 Valid.fail("die!").assert("anything", "die!");  // fail always fails
 
@@ -104,6 +104,10 @@ Valid.type(123).assert(123, "type requires a string argument, not number");
 Valid.boolean().assert(true);
 Valid.boolean().assert(false);
 Valid.boolean().assert(undefined, "is of type undefined not boolean");
+Valid.isTrue().assert(true);
+Valid.isTrue().assert(false, "is not equal to true");
+Valid.isFalse().assert(false);
+Valid.isFalse().assert(true, "is not equal to false");
 Valid['true']().assert(true);
 Valid['true']().assert(false, "is not equal to true");
 Valid['false']().assert(false);
