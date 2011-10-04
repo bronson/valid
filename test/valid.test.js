@@ -22,11 +22,16 @@ if(Valid.equal(4).check(5) !== "is not equal to 4") throw "test() failure needs 
 if(Valid.equal(4).isValid(4) !== true)               throw "check() success needs to return true";
 if(Valid.equal(4).isValid(5) !== false)              throw "check() failure needs to return false";
 
-
-// pathological cases
 Valid.assert("any value", "no validations!");
+
+// utilities
 Valid.nop().assert("any value");                // no-op always succeeds
 Valid.fail("die!").assert("anything", "die!");  // fail always fails
+Valid.todo("release 1.0").assert(12, 'release 1.0 is still todo');
+Valid.equal(12).message("should be 12").assert(12)
+Valid.equal(12).message("should be 12").assert(13, "should be 12")
+Valid.equal(12).message("first").message("last").assert(13, "last");
+Valid.message("bla").assert(12, "no validations!");
 
 // undefined
 Valid['undefined']().assert(undefined);
@@ -108,7 +113,7 @@ Valid.number().assert(123);
 Valid.number().assert('123', "is of type string not number");
 Valid.number().assert(undefined, "is of type undefined not number");
 Valid.integer().assert(123.0);
-Valid.integer().assert('123.0', "is of type string not number");
+Valid.integer().assert('123.0', "is not an integer");
 Valid.integer().assert(123.1, "is not an integer");
 Valid.even().assert(0);
 Valid.even().assert(12);
@@ -143,7 +148,7 @@ Valid.len(1,4).assert(' . . . . ', 'has length 9, greater than 4');
 Valid.len(2,4).assert(undefined, "doesn't have a length field");
 Valid.len(2,4).assert(3, "doesn't have a length field");
 Valid.empty().assert('');
-Valid.empty().assert(' ', 'is not empty');
+Valid.empty().assert(' ', 'should be empty');
 
 // regexes
 Valid.match(/^.*$/).assert('');
@@ -161,13 +166,13 @@ Valid.nomatch(/^\s*|\s*$/, 'i').assert('doh ', "matches /^\\s*|\\s*$/");
 // arrays
 Valid.array().empty().assert([]);
 Valid.array().empty().assert(null, "is not an array");
-Valid.array().empty().assert([undefined], "is not empty");
+Valid.array().empty().assert([undefined], "should be empty");
 Valid.len(0).assert([]);
 Valid.len(0,0).assert([]);
 Valid.len(0,0).assert([undefined], "has length 1, greater than 0");
 Valid.len(6,9).assert([0,1,2,3,4,5]);
 Valid.array(Valid.integer()).assert([0,1,2]);
-Valid.array(Valid.defined().integer()).assert([0,null,2], "item 1 is of type object not number");
+Valid.array(Valid.defined().integer()).assert([0,null,2], "item 1 is not an integer");
 Valid.array(Valid.defined().string().match(/cow/)).assert(['cow','cowtown','vacaville'], "item 2 does not match /cow/");
 
 // logic
@@ -228,7 +233,7 @@ Valid.optional().assert(undefined);   // an optional with no tests is equivalent
 Valid.optional().integer().assert(undefined);
 Valid.optional().integer().assert(null);
 Valid.optional().integer().assert(12);
-Valid.optional().integer().assert("12", "is of type string not number");
+Valid.optional().integer().assert("12", "is not an integer");
 
 // static
 var nullOrString = Valid.or(Valid.nil(), Valid.string());
@@ -237,43 +242,9 @@ nullOrString.assert('123');
 nullOrString.assert(123, "is not equal to null and is of type number not string");
 
 
+
 // closure leak meant only one test would be queued, not all three
 Valid.equal(3).assert(Valid.undef().nil().number()._queue.length );
 // closure leak meant all matches were appended to the same Chain
 Valid.equal(2).assert( Valid.match(/^abc$/)._queue.length );
 
-/*
-schema( true  ).validate( true  ).result();
-schema( false ).validate( false ).result();
-schema( true  ).validate( false ).result("false is not true");
-schema( false ).validate( true  ).result("true is not false");
-schema( false ).validate(undefined).result("undefined is not false");
-
-schema( 'abc'   ).validate( 'abc'  ).result();
-schema( 'abc'   ).validate( 'abc ' ).result("'abc ' does not equal 'abc'");
-schema( 123     ).validate( 123    ).result();
-schema( 123     ).validate( 123.1  ).result("123.1 does not equal 123");
-schema( /^abc$/ ).validate( 'abc'  ).result();
-schema( /^abc$/ ).validate( 'abcd' ).result("'abcd' does not match /^abc$/");
-
-schema( {abc: 123}           ).validate( {abc: 123}           ).result();
-schema( {abc: 123, def: 456} ).validate( {abc: 123}           ).result("[object Object] is missing def");
-schema( {abc: 123}           ).validate( {abc: 123, def: 456} ).result("[object Object] has def but template does not");
-
-schema( {a: {b: {c: 1}}}     ).validate( {a: {b: {c: 2}}}     ).result("a,b,c: 2 does not equal 1 for [object Object]");  // TODO: improve error message
-
-// arrays
-schema( [12, 13] ).validate( [12, 13] ).result();
-schema( [12, 13] ).validate( [12, 14]  ).result("1: 14 does not equal 13 for 12,14"); // TODO improve error message
-schema( [12, 13] ).validate( 12        ).result("12 is not an Array");
-schema( [12, 13] ).validate( undefined ).result("undefined is not an Array");
-schema( [12, Validator.IsInteger] ).validate( [12, 13] ).result();
-
-var _ = Validator;
-schema( _.IsArray(_.IsInteger) ).validate([12, 13, 14]).result();
-schema( _.IsArray(_.IsInteger, {min: 1, max: 3}) ).validate([12, 13]).result();
-schema( _.IsArray(_.IsString,  {min: 1, max: 3}) ).validate([12, 13]).result(["0: 12 is number, not string for 12,13", "1: 13 is number, not string for 12,13"]); // TODO: improve error message
-schema( _.IsArray(_.IsInteger, {min: 3, max: 4}) ).validate([12, 13]).result("12,13 has fewer than 3 elements");
-schema( _.IsArray(_.IsInteger, {min: 1, max: 0}) ).validate([12, 13]).result("12,13 has more than 0 elements");
-
-*/

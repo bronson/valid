@@ -123,9 +123,9 @@ Valid.json([12, 13]).assert(null,        {".": {message: "is null", value: null}
 Valid.json(Valid.array()               ).assert([]);
 Valid.json(Valid.array()               ).assert([1,2,3]);
 Valid.json(Valid.array(Valid.integer())).assert([1,2,3]);
-Valid.json(Valid.array(Valid.integer())).assert([1,2,'3'], {".": {message: "item 2 is of type string not number", value: [1,2,"3"]}});
+Valid.json(Valid.array(Valid.integer())).assert([1,2,'3'], {".": {message: "item 2 is not an integer", value: [1,2,"3"]}});
 Valid.json(Valid.array()               ).assert({"1":"2"}, {".": {message: "is not an array", value: {"1":"2"}}});
 Valid.json(Valid.array()               ).assert(null,      {".": {message: "is not an array", value: null}});
 Valid.json([12, Valid.integer()]).assert([12, 13]);
-Valid.json([12, Valid.integer()]).assert([12, "13"],       {"[1]": {message: "is of type string not number", value: "13"}});
+Valid.json([12, Valid.integer()]).assert([12, "13"],       {"[1]": {message: "is not an integer", value: "13"}});
 

@@ -16,7 +16,9 @@ A lightweight, chaining validation library.
 
     Valid.optional().string().check(null);       // can be null, undefined, or a string
     Valid.array(Valid.integer).check([1,2,3]);   // checks each item in the array
+    var isHex = Valid.match(/^[0-9A-F]$/i).message("should be a hexadecimal number");
 
+    // test JSON structures:
     var Schema = {
         Name:     Valid.notBlank(),
         Address: {
@@ -35,6 +37,10 @@ A lightweight, chaining validation library.
     }
 
     Valid.json(Schema).check(data);
+
+    // Easily define your own validations:
+    Valid.isPowerOfTen = Valid.mod(10).message("should be a power of ten).define();
+    Valid.min(10).max(100).isPowerOfTen().check(50);
 ```
 
 # Gruntles
@@ -48,6 +54,7 @@ This library is scary new.
 - noexisty is a stupid name
 - covert to Rails-like "5 should equal 4" instead of current "5 is not equal to 4"?
 - Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
+- convert to using nested functions instead of the `__queue` array?
 
 # Introduction
 
@@ -77,7 +84,7 @@ See [valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js).
 - Strings: string(), len(min,max), blank(), notBlank()
 - Regexps: match(regex[,modifiers]), nomatch(regex[,modifiers])
 - Logic: and(test[,test...]), or(test[,test...]), not(test,message)
-- Utilities: nop(), fail([message]), messageFor(test,message), todo([test])
+- Utilities: nop(), fail([message]), message(msg), todo([test])
 - JSON: json(schema)
 
 \*: These are JavaScript keywords.  While `Valid.undefined()` works
