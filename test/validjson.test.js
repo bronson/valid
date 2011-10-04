@@ -9,7 +9,7 @@ var DeepCompare = require('./deepcompare');
 
 // throws an error unless the result exactly matches what is expected
 Valid.assert = function assert(value, expected) {
-    var actual = this.test(value);
+    var actual = this.check(value);
     var diffstr = DeepCompare(expected, actual);
     if(diffstr) {
         var exstr = (expected === undefined ? "success" : JSON.stringify(expected));
@@ -23,7 +23,7 @@ Valid.assert = function assert(value, expected) {
 // quick real-world scenario...
 
 var AddressSchema = {     // schema for an address
-    Address         : Valid.array(Valid.string()).len(1,2),
+    Address         : Valid.or(Valid.notBlank(), Valid.array(Valid.notBlank()).len(1,2)),
     CityName        : Valid.notBlank(),
     StateName       : /^[A-Z][A-Z]$/,      // or Valid.oneOf({AR:true,AZ:true,...})
     PostalCode      : /^[0-9]{5}(-[0-9]{4})?/,
@@ -46,7 +46,7 @@ if(false) Valid.json(PersonSchema).assert({   // now validate this JSON
     MiddleName     : null,
     LastName       : 'Bronson',
     HomeAddress    : {
-        Address      : ["123 Easy St."],
+        Address      : "123 Easy St.",
         CityName     : "Santa Cruz",
         StateName    : "CA",
         PostalCode   : "95063-1337",
@@ -63,11 +63,11 @@ if(false) Valid.json(PersonSchema).assert({   // now validate this JSON
 
 
 // first test the validation routines
-if(Valid.json({a:1}).test({a:1}) !== undefined)    throw "test() success needs to return undefined";
-var result = DeepCompare(Valid.json({a:1}).test({a:2}), {'a': {value: 2, message: 'does not equal 1'}});
+if(Valid.json({a:1}).check({a:1}) !== undefined)    throw "test() success needs to return undefined";
+var result = DeepCompare(Valid.json({a:1}).check({a:2}), {'a': {value: 2, message: 'does not equal 1'}});
 if(result) throw "test() failure was wrong: " + result;
-if(Valid.json({a:1}).check({a:1}) !== true)       throw "check() success needs to return true";
-if(Valid.json({a:1}).check({a:2}) !== false)      throw "check() failure needs to return false";
+if(Valid.json({a:1}).isValid({a:1}) !== true)       throw "check() success needs to return true";
+if(Valid.json({a:1}).isValid({a:2}) !== false)      throw "check() failure needs to return false";
 
 
 // now ensure Valid.json works

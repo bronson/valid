@@ -14,13 +14,13 @@ A lightweight, chaining validation library.
     inRange.check(3)            // check returns true/false, here it returns false
     inRange.test(12)            // returns "is not less than or equal to 9"
 
-    Valid.optional().string()   // success is null, undefined, or a string
+    Valid.optional().string().check(null);       // can be null, undefined, or a string
+    Valid.array(Valid.integer).check([1,2,3]);   // checks each item in the array
 
     var Schema = {
         Name:     Valid.notBlank(),
-        Numbers:  Valid.array(Valid.integer()).len(2,5),   // an array of 2, 3, 4, or 5 integers
         Address: {
-            State:    /^[A-Z][A-Z]$/,                      // shortcut for Valid.match(/^[A-Z][A-Z]$/)
+            State:    /^[A-Z][A-Z]$/,  // shortcut for Valid.match(/^[A-Z][A-Z]$/)
             Country:  "US"
         }
     };
@@ -51,19 +51,14 @@ This library is scary new.
 
 # Introduction
 
-Valid allows you to declare strings of validations and
-use them to test different values:
+Valid allows you to declare a validation and then test it against
+any number of values:
 
 ```javascript
-    var checker = Valid.integer().even().min(6);
-    checker.test(9);      // returns "9 is not even"
-    checker.check(10);    // returns true
+    var validation = Valid.integer().even().min(6);
+    validation.check(9);      // returns "9 is not even"
+    validation.isValid(10);   // returns true.
 ```
-
-Valid offers three ways of testing values:
-
-- test(val) -- returns undefined on success or the error if the validation failed.
-- check(val) -- returns true or false.
 
 The error will be a string for simple validations or an object
 for JSON validations (see _Errors_ below).
@@ -85,9 +80,10 @@ See [valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js).
 - Utilities: nop(), fail([message]), messageFor(test,message), todo([test])
 - JSON: json(schema)
 
-\*: These are JavaScript keywords.  While `Valid.undefined()` will work
-with a lot of interpreters, it won't work everywhere.
-Each keyword validation has a more compatible alternative: Valid.undef(), Valid.nil(), etc.
+\*: These are JavaScript keywords.  While `Valid.undefined()` works
+with a lot of interpreters, it doesn't work everywhere.
+Each keyword validation has a more compatible alternative that should
+be used instead: Valid.undef(), Valid.nil(), etc.
 
 # Errors
 
@@ -106,7 +102,6 @@ the value that failed to validate.
         "Addresses[0].State" : { message: "doesn't match /[A-Z][A-Z]/", value: "ca" }
     }
 ```
-
 
 # Extending Valid
 
