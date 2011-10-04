@@ -47,14 +47,18 @@ A lightweight, chaining validation library.
 
 This library is scary new.
 
-- test? valid? check?  Could these names be more generic?
-- todo: isDate, isBefore, isAfter
-- todo: isEmail() isIP() isUrl() isUUID()
-- Valid is not a great name. it's not even a noun.
-- noexisty is a stupid name
 - covert to Rails-like "5 should equal 4" instead of current "5 is not equal to 4"?
+- simplify error objects
+- try to shrink the api, implement kitchen-sink
+- npm publish
+- pass a json schema to array()?  factor into RunSubtest & have everything call this.
+- write isDate, isBefore, isAfter
+- write isEmail() isIP() isUrl() isUUID()
+- test coverage?
 - Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
+- write an assertion function?  Valid.assert(12).integer().min(5);
 - convert to using nested functions instead of the `__queue` array?
+- do a doctest somehow
 
 # Introduction
 
@@ -67,8 +71,9 @@ any number of values:
     validation.isValid(10);   // returns true.
 ```
 
-The error will be a string for simple validations or an object
-for JSON validations (see _Errors_ below).
+check() returns undefined if the validation succeeds, a string like "should not
+be null" if it fails, or an error object for JSON validations (see _Errors_
+below).  isValid() just returns true or false.
 
 # Built-In Validations
 
