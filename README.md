@@ -13,10 +13,8 @@ A lightweight, chaining validation library.
     var inRange = Valid.number().min(4).max(9)
     inRange.check(3)            // check returns true/false, here it returns false
     inRange.test(12)            // returns "is not less than or equal to 9"
-    inRange.odd().verify(6)     // throws "6 is not odd"
 
     Valid.optional().string()   // success is null, undefined, or a string
-    Valid.array(Valid.integer).verify([1,2,3]);  // each item in the array must be an integer
 
     var Schema = {
         Name:     Valid.notBlank(),
@@ -36,7 +34,7 @@ A lightweight, chaining validation library.
         }
     }
 
-    Valid.json(Schema).verify(data);
+    Valid.json(Schema).check(data);
 ```
 
 # Gruntles
@@ -58,15 +56,14 @@ use them to test different values:
 
 ```javascript
     var checker = Valid.integer().even().min(6);
-    checker.verify(9);    // throws "9 is not even"
-    checker.verify(10);   // succeeds
+    checker.test(9);      // returns "9 is not even"
+    checker.check(10);    // returns true
 ```
 
 Valid offers three ways of testing values:
 
 - test(val) -- returns undefined on success or the error if the validation failed.
 - check(val) -- returns true or false.
-- verify(val) -- throws the error if the validation fails.
 
 The error will be a string for simple validations or an object
 for JSON validations (see _Errors_ below).
@@ -119,14 +116,14 @@ and add it to the root object:
 ```javascript
     Valid.latitude  = Valid.ge(-90).le(90).define();
     Valid.longitude = Valid.ge(-180).le(180).define();
-    Valid.integer().latitude().verify(20);    // success!
+    Valid.integer().latitude().isValid(20);  // true!
 ```
 
 You can also add validations that take parameters:
 
 ```javascript
     Valid.mod10 = function(rem) { return this.mod(10,rem) }
-    Valid.mod10(6).verify(127);   // throws "127 mod 10 is 7 not 6"
+    Valid.mod10(6).check(127);   // returns "127 mod 10 is 7 not 6"
 ```
 
 Or just rename them:
