@@ -11,16 +11,16 @@ Valid.assert = function assert(value, expected) {
     if(expected !== actual) {
         var exstr = (expected === undefined ? "success" : "'" + expected + "'");
         var acstr = (actual === undefined ? "success" : "'" + actual + "'");
-        throw value + ": expected " + exstr + " but got " + acstr;
+        throw Error(value + ": expected " + exstr + " but got " + acstr);
     }
 };
 
 
 // first test the validation routines
-if(Valid.equal(4).check(4) !== undefined)           throw "test() success needs to return undefined";
-if(Valid.equal(4).check(5) !== "is not equal to 4") throw "test() failure needs to return a string";
-if(Valid.equal(4).isValid(4) !== true)               throw "check() success needs to return true";
-if(Valid.equal(4).isValid(5) !== false)              throw "check() failure needs to return false";
+if(Valid.equal(4).check(4) !== undefined)            throw Error("test() success needs to return undefined");
+if(Valid.equal(4).check(5) !== "is not equal to 4")  throw Error("test() failure needs to return a string");
+if(Valid.equal(4).isValid(4) !== true)               throw Error("check() success needs to return true");
+if(Valid.equal(4).isValid(5) !== false)              throw Error("check() failure needs to return false");
 
 Valid.assert("any value", "no validations!");
 

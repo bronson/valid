@@ -14,7 +14,7 @@ Valid.assert = function assert(value, expected) {
     if(diffstr) {
         var exstr = (expected === undefined ? "success" : JSON.stringify(expected));
         var acstr = (actual === undefined ? "success" : JSON.stringify(actual));
-        throw value + ":\n expected " + exstr + "\n  but got " + acstr + "\n  (" + diffstr + ")";
+        throw Error(value + ":\n expected " + exstr + "\n  but got " + acstr + "\n  (" + diffstr + ")");
     }
 };
 
@@ -63,11 +63,11 @@ if(false) Valid.json(PersonSchema).assert({   // now validate this JSON
 
 
 // first test the validation routines
-if(Valid.json({a:1}).check({a:1}) !== undefined)    throw "test() success needs to return undefined";
+if(Valid.json({a:1}).check({a:1}) !== undefined)    throw Error("test() success needs to return undefined");
 var result = DeepCompare(Valid.json({a:1}).check({a:2}), {'a': {value: 2, message: 'does not equal 1'}});
-if(result) throw "test() failure was wrong: " + result;
-if(Valid.json({a:1}).isValid({a:1}) !== true)       throw "check() success needs to return true";
-if(Valid.json({a:1}).isValid({a:2}) !== false)      throw "check() failure needs to return false";
+if(result) throw Error("test() failure was wrong: " + result);
+if(Valid.json({a:1}).isValid({a:1}) !== true)       throw Error("check() success needs to return true");
+if(Valid.json({a:1}).isValid({a:2}) !== false)      throw Error("check() failure needs to return false");
 
 
 // now ensure Valid.json works
