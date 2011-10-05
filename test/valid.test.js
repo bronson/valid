@@ -26,7 +26,9 @@ Valid.assert("any value", "no validations!");
 
 // utilities
 Valid.nop().assert("any value");                // no-op always succeeds
-Valid.fail("die!").assert("anything", "die!");  // fail always fails
+Valid.fail().assert("anything", "failed");
+Valid.fail("die!").assert("anything", "die!");
+Valid.todo().assert("wut", "validation is still todo");
 Valid.todo("release 1.0").assert(12, 'release 1.0 is still todo');
 Valid.equal(12).message("should be 12").assert(12)
 Valid.equal(12).message("should be 12").assert(13, "should be 12")

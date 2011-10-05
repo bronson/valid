@@ -3,7 +3,7 @@
 A lightweight, chaining validation library.
 
 - Zero dependencies.  Can be used in browsers, Node, and Mongo/Couch Map/Reduce functions.
-- Recursively tests JSON data structures.
+- Recursively test JSON data structures.
 - Easy to extend with your own validations.
 - Excellent test coverage (run `npm test`).
 
