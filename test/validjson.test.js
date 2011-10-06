@@ -102,6 +102,8 @@ Valid.json({}                  ).assert({abc: 123}, {".":{message: "can't includ
 
 Valid.json({a: {b: {c: 1}}}).assert({a: {b: {c: 2}}}, {'a.b.c': {message: "must equal 1", value: 2}});
 Valid.json({a: {b: /wut/i}}).assert({a: {b: "NOWUTY"}});
+Valid.json({a:{}}).assert({a:1}, {"a":{"value":1,"message":"must be an object"}});
+Valid.json({a:1,b:{c:{d:2}}}).assert({a:1,b:{c:1}}, {"b.c":{"value":1,"message":"must be an object"}});
 
 // Valid chains
 Valid.json(Valid.optional().string()).assert(undefined);
