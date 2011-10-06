@@ -6,10 +6,13 @@
 // usage:
 //   DeepCompare({a:1}, {a:1})  returns undefined, no differences
 //   DeepCompare({a:1}, {a:2})  returns a string describing the difference
-//
-// can't use JSON.stringify for comparison because of key order problems
+
 
 module.exports = function DeepCompare(a, b, path) {
+    // need to duck type because typeof and instanceof don't work reliably
+    var isRegExp = function(o) { return o && o.test && o.exec && o.source && (o.global === true || o.global === false) && (o.ignoreCase === true || o.ignoreCase === false) && (o.multiline === true || o.multiline === false) };
+    var refields = "source global ignoreCase multiline".split(' ');
+
     if(path === undefined) path = '';
     if(typeof a !== typeof b) return path + ": " + (typeof a) + " vs " + (typeof b);
     switch(typeof a) {
@@ -20,11 +23,11 @@ module.exports = function DeepCompare(a, b, path) {
         case 'null': case 'function': case 'object':
         if(a === null && b !== null) return path + ": should be null";
         if(a !== null && b === null) return path + ": should not be null";
-        if(a instanceof RegExp) {
-            if(!(b instanceof RegExp)) return path + ": should be a RegExp";
-            if(actual.source !== expected.source || actual.global !== expected.global ||
-               actual.ignoreCase !== expected.ignoreCase || actual.multiline !== expected.multiline) {
-                return path + ": regexps differ";
+        if(isRegExp(a)) {
+            if(!(isRegExp(b))) return path + ": should be a RegExp";
+            for(var i in refields) {
+                var field = refields[i];
+                if(a[field] !== b[field]) return path + ": regexp " + field + ": " + a[field] + " vs. " + b[field];
             }
         } else if(a instanceof Array) {
             if(!(b instanceof Array)) return path + ": should be an Array";
