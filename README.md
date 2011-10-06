@@ -11,12 +11,12 @@ A lightweight, chaining validation library.
 ```javascript
     var Valid = require('valid');
     var inRange = Valid.number().min(4).max(9)
-    inRange.check(3)            // check returns true/false, here it returns false
-    inRange.test(12)            // returns "is not less than or equal to 9"
+    inRange.check(7)            // returns nothing -- no errors
+    inRange.check('7')          // returns "must be a number"
+    inRange.check(12)           // returns "must be less than or equal to 9"
 
     Valid.optional().string().check(null);       // can be null, undefined, or a string
-    Valid.array(Valid.integer).check([1,2,3]);   // checks each item in the array
-    var isHex = Valid.match(/^[0-9A-F]$/i).message("should be a hexadecimal number");
+    Valid.array(Valid.integer()).check([1,2,3]);   // checks each item in the array
 
     // test JSON structures:
     var Schema = {
@@ -46,7 +46,6 @@ A lightweight, chaining validation library.
 
 This library is scary new.
 
-- simplify error objects
 - try to shrink the api, implement kitchen-sink
 - npm publish
 - pass a json schema to array()?  factor into RunSubtest & have everything call this.
@@ -62,8 +61,8 @@ This library is scary new.
 
 # Introduction
 
-Valid allows you to declare a validation and then test it against
-any number of values:
+Valid allows you to declare a validation and run it against any number of
+values:
 
 ```javascript
     var validation = Valid.integer().even().min(6);
@@ -114,13 +113,15 @@ It's easy to supply your own error messages:
    Valid.match(/-/).message("must contain a dash")
 
 Because JSON validations need to return multiple errors, they return an object
-instead of a string.  The `value` field contains the value that failed to
-validate.
+instead of a string.  The error object has the same structure as the JSON
+except that arrays are converted into objects.
 
 ```javascript
     {
-        "Name"               : { message: "is blank", value: "" },
-        "Addresses[0].State" : { message: "doesn't match /[A-Z][A-Z]/", value: "ca" }
+        Name: "is blank",
+        Address: {
+            State: "doesn't match /[A-Z][A-Z]/"
+        }
     }
 ```
 
