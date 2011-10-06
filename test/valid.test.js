@@ -164,7 +164,6 @@ Valid.match(/ABC/i).assert('noodabc ');
 Valid.match('ABC', 'i').assert('noodabc ');
 Valid.nomatch(/.../).assert('--');
 Valid.nomatch('wut', 'i').assert('WUT', "can't match /wut/i");
-Valid.nomatch(/^\s*|\s*$/, 'i').assert('doh ', "can't match /^\\s*|\\s*$/");
 
 // arrays
 Valid.array().empty().assert([]);
