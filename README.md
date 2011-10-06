@@ -41,6 +41,7 @@ A lightweight, chaining validation library.
     // Easily define your own validations:
     Valid.isPowerOfTen = Valid.mod(10).message("should be a power of ten).define();
     Valid.min(10).max(100).isPowerOfTen().check(50);
+```
 
 # Gruntles
 
@@ -51,6 +52,7 @@ This library is scary new.
 - pass a json schema to array()?  factor into RunSubtest & have everything call this.
 - write isDate, isBefore, isAfter
 - write isEmail() isIP() isUrl() isUUID()
+- Pass error message to Valid constructor?  make errorMessage a synonym for message?
 - test coverage?
 - Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
 - write an assertion function?  Valid.assert(12).integer().min(5);
@@ -81,11 +83,9 @@ This list is probably incomplete but the code at the bottom of
 should be reasonably readable.
 
 - Presence: defined(), undef(), \*undefined(), nil(), \*null(), notNull()
-- Pass error message to Valid constructor?  make errorMessage a synonym for message?
 - Equality: equal(a[,b...]), notEqual(...), oneOf(arrayOrObject), \*in(arrayOrObject)
 - Comparison: eq(n), lt(n), le(n), ge(n), gt(n), ne(n)
 - Numbers: number(), integer(), mod(x[,rem]), even(), odd()
-- Booleans: \*boolean(), isTrue(), \*true(), isFalse(), \*false()
 - Arrays: array([validationForEachItem]), len(min,max), empty()
 - Strings: string(), len(min,max), blank(), notBlank()
 - Regexps: match(regex[,modifiers]), nomatch(regex[,modifiers])

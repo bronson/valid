@@ -98,19 +98,6 @@ Valid.type('garbage').assert('123', "must be of type garbage not string");
 Valid.type(undefined).assert(undefined, "type requires a string argument, not undefined");
 Valid.type(123).assert(123, "type requires a string argument, not number");
 
-// booleans
-Valid.boolean().assert(true);
-Valid.boolean().assert(false);
-Valid.boolean().assert(undefined, "must be a boolean");
-Valid.isTrue().assert(true);
-Valid.isTrue().assert(false, "must be true");
-Valid.isFalse().assert(false);
-Valid.isFalse().assert(true, "must be false");
-Valid['true']().assert(true);
-Valid['true']().assert(false, "must be true");
-Valid['false']().assert(false);
-Valid['false']().assert(true, "must be false");
-
 // numbers
 Valid.number().assert(123);
 Valid.number().assert('123', "must be a number");
