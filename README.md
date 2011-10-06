@@ -41,13 +41,11 @@ A lightweight, chaining validation library.
     // Easily define your own validations:
     Valid.isPowerOfTen = Valid.mod(10).message("should be a power of ten).define();
     Valid.min(10).max(100).isPowerOfTen().check(50);
-```
 
 # Gruntles
 
 This library is scary new.
 
-- covert to Rails-like "5 should equal 4" instead of current "5 is not equal to 4"?
 - simplify error objects
 - try to shrink the api, implement kitchen-sink
 - npm publish
@@ -58,6 +56,8 @@ This library is scary new.
 - Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
 - write an assertion function?  Valid.assert(12).integer().min(5);
 - convert to using nested functions instead of the `__queue` array?
+- 'not' should try to modify the error message on the way through
+- Valid.Escape needs some love
 - do a doctest somehow
 
 # Introduction
@@ -77,14 +77,16 @@ below).  isValid() just returns true or false.
 
 # Built-In Validations
 
-This is probably incomplete.
-See [valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js).
+This list is probably incomplete but the code at the bottom of
+[valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js)
+should be reasonably readable.
 
-- Presence: defined(), undef(), undefined\*(), nil(), null\*(), notNull()
-- Equality: equal(a[,b...]), notEqual(...), oneOf(arrayOrObject), in\*(arrayOrObject)
+- Presence: defined(), undef(), \*undefined(), nil(), \*null(), notNull()
+- Pass error message to Valid constructor?  make errorMessage a synonym for message?
+- Equality: equal(a[,b...]), notEqual(...), oneOf(arrayOrObject), \*in(arrayOrObject)
 - Comparison: eq(n), lt(n), le(n), ge(n), gt(n), ne(n)
 - Numbers: number(), integer(), mod(x[,rem]), even(), odd()
-- Booleans: boolean(), isTrue(), true\*(), isFalse(), false\*()
+- Booleans: \*boolean(), isTrue(), \*true(), isFalse(), \*false()
 - Arrays: array([validationForEachItem]), len(min,max), empty()
 - Strings: string(), len(min,max), blank(), notBlank()
 - Regexps: match(regex[,modifiers]), nomatch(regex[,modifiers])
@@ -92,21 +94,28 @@ See [valid.js](https://github.com/bronson/valid/blob/master/lib/valid.js).
 - Utilities: nop(), fail([message]), message(msg), todo([test])
 - JSON: json(schema)
 
-\*: These are JavaScript keywords.  While `Valid.undefined()` works
-with a lot of interpreters, it doesn't work everywhere.
-Each keyword validation has a more compatible alternative that should
-be used instead: Valid.undef(), Valid.nil(), etc.
+\*: These function names are also JavaScript keywords.  While
+`Valid.undefined()` works with a lot of interpreters, it doesn't work
+everywhere.  Each keyword validation has a more compatible alternative that
+should be used instead: Valid.undef(), Valid.nil(), etc.
 
 # Errors
 
-When a validation fails, the validation returns a string ready
-for concatenation: "is not even", "is not equal to 12", "mod 4 is 2".
-If the error is being thrown then the failing value is tacked onto the front:
-"3 is not even", "null is not equal to 12", "6 mod 4 is 2".
+When a validation fails, check() returns a concise, positive message with the
+value implied at the front: "must be even", "can't be blank", etc.  The messages
+are meant to be understandable by end users.
 
-There is one exception: JSON validations.  Because they can return multiple
-errors, they return an object instead of a string.  The `value` field contains
-the value that failed to validate.
+Concatenating the value and message is one obvioius use ("7 must be even"), but
+this style of wording is useful in other ways too.  For instance, a web app can
+display the message to the right of the form element containing the error.
+
+It's easy to supply your own error messages:
+
+   Valid.match(/-/).message("must contain a dash")
+
+Because JSON validations need to return multiple errors, they return an object
+instead of a string.  The `value` field contains the value that failed to
+validate.
 
 ```javascript
     {
@@ -129,8 +138,8 @@ and add it to the root object:
 You can also add validations that take parameters:
 
 ```javascript
-    Valid.mod10 = function(rem) { return this.mod(10,rem) }
-    Valid.mod10(6).check(127);   // returns "127 mod 10 is 7 not 6"
+    Valid.mod10 = function(rem) { return this.mod(10,rem).message("must end in" + rem); }
+    Valid.mod10(6).check(127);   // returns "must end in 6"
 ```
 
 Or just rename them:
