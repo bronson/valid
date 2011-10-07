@@ -47,14 +47,11 @@ A lightweight, chaining validation library.
 
 This library is scary new.
 
-- try to shrink the api, implement kitchen-sink
-- npm publish
+- terminology: exists/notExists, and oneOf/notOneOf vs. in/notIn
 - pass a json schema to array()?  factor into RunSubtest & have everything call this.
-- write isDate, isBefore, isAfter
-- write isEmail() isIP() isUrl() isUUID()
+- npm publish
 - Pass error message to Valid constructor?  make errorMessage a synonym for message?
 - test coverage?
-- Allow putting value first?  i.e. Valid(9).lt(12).gt(10) throws "9 is not greater than 10"
 - write an assertion function?  Valid.assert(12).integer().min(5);
 - convert to using nested functions instead of the `__queue` array?
 - 'not' should try to modify the error message on the way through
@@ -83,8 +80,9 @@ should be reasonably readable.
 
 - Presence: defined(), undef(), \*undefined(), nil(), \*null(), notNull()
 - Equality: equal(a[,b...]), notEqual(...), oneOf(arrayOrObject), \*in(arrayOrObject)
-- Comparison: eq(n), lt(n), le(n), ge(n), gt(n), ne(n)
+- Comparison: eq(n), lt(n), le(n), ge(n), gt(n), ne(n), min(n), max(n)
 - Numbers: number(), integer(), mod(x[,rem]), even(), odd()
+- Dates: date(), before([date]), after([date])
 - Arrays: array([validationForEachItem]), len(min,max), empty()
 - Strings: string(), len(min,max), blank(), notBlank()
 - Regexps: match(regex[,modifiers]), nomatch(regex[,modifiers])
@@ -147,6 +145,25 @@ Or just rename them:
 ```javascript
     Valid.every = Valid.and;
     Valid.any = Valid.or;
+```
+
+Here's a rogue's gallery of examples.  Drop them in your code, customize as needed.
+You call them like any other validation: `Valid.isNumeric().len(2)`.
+
+```javascript
+    // TODO: test these!
+    Validator.boolean =        Valid.type('boolean').message('must be a boolean').define();
+    Validator.true    =        Valid.equal(true).message('must be true').define();
+    Validator.false   =        Valid.equal(false).message('must be false').define();
+    Validator.isAlpha =        Valid.match(/^[a-zA-Z]+$/).message("must be only letters").define();
+    Validator.isAlphanumeric = Valid.match(/^[a-zA-Z0-9]+$/).message("must be letters or numbers").define();
+    Validator.isNumeric =      Valid.match(/^-?[0-9]+$/).message("must be numeric").define();
+    Validator.isLowercase =    Valid.match(/^[a-z]+$/).message("must be lower-case letters").define();
+    Validator.isUppercase =    Valid.match(/^[A-Z]+$/).message("must be upper-case letters").define();
+    Validator.noOutsideWS =    Valid.noMatch(/^\s+|\s+$/).message("must not have leading or trailing whitespace").define();
+    Validator.noConsecutiveWS= Valid.noMatch(/\s\s/).message("must not have consecutive whitespace").define();
+    Validator.noControlChars = Valid.noMatch(/[\x00-\x19\x7F]/).message("must not have control characters").define();
+    Validator.saneString =     Valid.noOutsideWS().noConsecutiveWS().noControlChars().define();
 ```
 
 

@@ -7,10 +7,17 @@ var Valid = require('../lib/valid');
 
 // throws an error if the result doesn't exactly match the expectation
 Valid.assert = function assert(value, expected) {
+    // need to duck type because typeof and instanceof don't work reliably
+    var isRegExp = function(o) { return o && o.test && o.exec && o.source && (o.global === true || o.global === false) && (o.ignoreCase === true || o.ignoreCase === false) && (o.multiline === true || o.multiline === false) };
+
     var actual = this.check(value);
-    if(expected !== actual) {
+    var acstr = (actual === undefined ? "success" : "'" + actual + "'");
+    if(isRegExp(expected)) {
+        if(!actual.match(expected)) {
+            throw Error(value + ": " + expected + " doesn't match " + acstr);
+        }
+    } else if(expected !== actual) {
         var exstr = (expected === undefined ? "success" : "'" + expected + "'");
-        var acstr = (actual === undefined ? "success" : "'" + actual + "'");
         throw Error(value + ": expected " + exstr + " but got " + acstr);
     }
 };
@@ -113,6 +120,25 @@ Valid.odd().assert(1);
 Valid.odd().assert(17);
 Valid.odd().assert(12, "must be odd");
 Valid.odd().assert(0, "must be odd");
+
+// dates
+Valid.date().assert(new Date);
+Valid.date().assert("Dec 25, 1989");
+Valid.date().assert(null, "must be a date");
+Valid.date().assert('zqm', "must be a date");
+var today = new Date();
+var past = new Date();
+past.setFullYear(past.getFullYear() - 1);
+var future = new Date();
+future.setFullYear(future.getFullYear() + 1);
+Valid.after().assert(future);
+Valid.before().assert(past);
+Valid.after().assert(past, /^must be after /);
+Valid.before().assert(future, /^must be before /);
+Valid.after(past).assert(today);
+Valid.before(future).assert(today);
+Valid.after(future).assert(today, /^must be after /);
+Valid.before(past).assert(today, /^must be before /);
 
 // strings
 Valid.string().assert(' 123');
