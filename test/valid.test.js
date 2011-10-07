@@ -8,7 +8,7 @@ var Valid = require('../lib/valid');
 // throws an error if the result doesn't exactly match the expectation
 Valid.assert = function assert(value, expected) {
     // need to duck type because typeof and instanceof don't work reliably
-    var isRegExp = function(o) { return o && o.test && o.exec && o.source && (o.global === true || o.global === false) && (o.ignoreCase === true || o.ignoreCase === false) && (o.multiline === true || o.multiline === false) };
+    var isRegExp = function(o) { return o && o.test && o.exec && o.source && (o.global === true || o.global === false) && (o.ignoreCase === true || o.ignoreCase === false) && (o.multiline === true || o.multiline === false); };
 
     var actual = this.check(value);
     var acstr = (actual === undefined ? "success" : "'" + actual + "'");
@@ -37,8 +37,8 @@ Valid.fail().assert("anything", "failed");
 Valid.fail("die!").assert("anything", "die!");
 Valid.todo().assert("wut", "validation is still todo");
 Valid.todo("release 1.0").assert(12, 'release 1.0 is still todo');
-Valid.equal(12).message("must be twelve").assert(12)
-Valid.equal(12).message("must be twelve").assert(13, "must be twelve")
+Valid.equal(12).message("must be twelve").assert(12);
+Valid.equal(12).message("must be twelve").assert(13, "must be twelve");
 Valid.equal(12).message("first").message("last").assert(13, "last");
 Valid.equal(12).message("first").message("middle").message("last").assert(13, "last");
 Valid.message("bla").assert(12, "no validations!");
@@ -122,7 +122,7 @@ Valid.odd().assert(12, "must be odd");
 Valid.odd().assert(0, "must be odd");
 
 // dates
-Valid.date().assert(new Date);
+Valid.date().assert(new Date());
 Valid.date().assert("Dec 25, 1989");
 Valid.date().assert(null, "must be a date");
 Valid.date().assert('zqm', "must be a date");
