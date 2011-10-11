@@ -96,9 +96,9 @@ Valid.json(/abc/  ).assert('DEABCDEF', {".": "must match /abc/"});
 
 Valid.json({abc: 123}          ).assert({abc: 123});
 Valid.json({abc: 123, def: 456}).assert({abc: 123},           {'.': "must include def"});
-Valid.json({abc: 123}          ).assert({abc: 123, def: 456}, {'.': "can't include def"});
+Valid.json({abc: 123}          ).assert({abc: 123, def: 456});   // not strict mode so extra keys in value are ignored
 Valid.json({abc: 123}          ).assert({}, {".":"must include abc"});
-Valid.json({}                  ).assert({abc: 123}, {".":"can't include abc"});
+Valid.json({}                  ).assert({abc: 123});             // not strict mode
 
 Valid.json({a: {b: {c: 1}}}).assert({a: {b: {c: 2}}}, {'a':{'b':{'c': "must equal 1"}}});
 Valid.json({a: {b: /wut/i}}).assert({a: {b: "NOWUTY"}});
