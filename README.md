@@ -58,7 +58,6 @@ This library is scary new.
 - write an assertion function?  Valid.assert(12).integer().min(5);
 - convert to using nested functions instead of the `__queue` array?
 - 'not' should try to modify the error message on the way through
-- Valid.Escape needs some love
 - do a doctest somehow
 
 # Introduction

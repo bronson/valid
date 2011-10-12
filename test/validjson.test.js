@@ -85,7 +85,7 @@ Valid.json(null).assert({},         {".": "must be null"});
 Valid.json({}).assert(null,         {".": "can't be null"});
 
 Valid.json('abc'  ).assert('abc');
-Valid.json('abc'  ).assert('abc ',  {'.': "must equal 'abc'"});
+Valid.json('abc'  ).assert('abc ',  {'.': 'must equal "abc"'});
 Valid.json(123    ).assert(123);
 Valid.json(123    ).assert(123.1,   {'.': "must equal 123"});
 Valid.json(/^abc$/).assert('abc');

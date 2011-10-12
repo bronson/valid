@@ -70,19 +70,19 @@ Valid.equal().assert(undefined, "equal needs at least one argument");
 Valid.equal(null).assert(null);
 Valid.equal(null).assert(undefined, "must equal null");
 Valid.equal("a").assert("a");
-Valid.equal("a").assert(" ", "must equal 'a'");
+Valid.equal("a").assert(" ", 'must equal "a"');
 Valid.equal(12).assert(12);
 Valid.equal(12).assert(13, "must equal 12");
 Valid.notEqual(null).assert(undefined);
 Valid.notEqual(null).assert(null, "can't equal null");
 Valid.notEqual("a").assert(" ");
-Valid.notEqual("a").assert("a", "can't equal 'a'");
+Valid.notEqual("a").assert("a", 'can\'t equal "a"');
 Valid.notEqual(12).assert(13);
 Valid.notEqual(12).assert(12, "can't equal 12");
 Valid.equal(undefined, null).assert(null);
 Valid.equal(1,2,3,4,5).assert(4);
 Valid.equal(1,2,3,4,5).assert(6, "must be 1, 2, 3, 4 or 5");
-Valid.equal("able","baker").assert(undefined, "must be 'able' or 'baker'");
+Valid.equal("able","baker").assert(undefined, 'must be "able" or "baker"');
 
 Valid.oneOf().assert(undefined, "oneOf needs a collection");
 Valid.oneOf([1,2,3,4,5]).assert(4);
@@ -208,14 +208,14 @@ Valid.eq('yyz').assert('yyz');
 Valid.ge('yyz').assert('yyza');
 Valid.ge('yyz').assert('yyz');
 Valid.gt('yyz').assert('yyzz');
-Valid.eq('yyz').assert('Yyz',  "must equal 'yyz'");
-Valid.ge('yyz').assert('xyza', "must be greater than or equal to 'yyz'");
-Valid.gt('yyz').assert('xyz',  "must be greater than 'yyz'");
-Valid.gt('yyz').assert('yyz',  "must be greater than 'yyz'");
-Valid.ne('yyz').assert('yyz',  "can't equal 'yyz'");
-Valid.lt('yyz').assert('yyza', "must be less than 'yyz'");
-Valid.lt('yyz').assert('yyz',  "must be less than 'yyz'");
-Valid.le('yyz').assert('yyzz', "must be less than or equal to 'yyz'");
+Valid.eq("yyz").assert("Yyz",  'must equal "yyz"');
+Valid.ge("yyz").assert("xyza", 'must be greater than or equal to "yyz"');
+Valid.gt("yyz").assert("xyz",  'must be greater than "yyz"');
+Valid.gt("yyz").assert("yyz",  'must be greater than "yyz"');
+Valid.ne("yyz").assert("yyz",  'can\'t equal "yyz"');
+Valid.lt("yyz").assert("yyza", 'must be less than "yyz"');
+Valid.lt("yyz").assert("yyz",  'must be less than "yyz"');
+Valid.le("yyz").assert("yyzz", 'must be less than or equal to "yyz"');
 
 // optional
 Valid.optional().assert(undefined);   // an optional with no tests is equivalent to nop()
@@ -236,4 +236,15 @@ nullOrString.assert(123, "must be null or must be a string");
 Valid.equal(3).assert(Valid.undef().nil().number()._queue.length );
 // closure leak meant all matches were appended to the same Chain
 Valid.equal(2).assert( Valid.match(/^abc$/)._queue.length );
+
+
+// quickly make sure escape routine works
+if(Valid.Escape(123) !== "123") throw "noint";
+if(Valid.Escape(true) !== "true") throw "notrue";
+if(Valid.Escape(false) !== "false") throw "nofalse";
+if(Valid.Escape(null) !== "null") throw "nonull";
+if(Valid.Escape(undefined) !== "undefined") throw "noundef";
+if(Valid.Escape("a'b'c") !== '"a\'b\'c"') throw "nosquote";
+if(Valid.Escape('a"b"c') !== '"a\\"b\\"c"') throw "nodquote";
+if(Valid.Escape('"\r\n\t\n\r\t') !== '"\\"\\r\\n\\t\\n\\r\\t"') throw "noctrl";
 
