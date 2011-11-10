@@ -7,6 +7,8 @@ A lightweight, chaining validation library.
 - Easy to extend with your own validations.
 - Excellent test coverage (run `npm test`).
 
+[![Travis Build Status](http://travis-ci.org/bronson/valid.png)](http://travis-ci.org/bronson/valid)
+
 
 ```javascript
     var Valid = require('valid');
